@@ -68,31 +68,29 @@
       min-width: 0;
     }
 
-.brand-logo {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+    .brand-logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 52px;
+    }
 
-.logo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
+    .logo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      animation: floatLogo 3.5s ease-in-out infinite;
+    }
 
-@keyframes floatLogo {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-2px); }
-}
-
-.logo-img {
-  animation: floatLogo 3.5s ease-in-out infinite;
-}
+    @keyframes floatLogo {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-2px); }
+    }
 
     .brand-text h1 {
       margin: 0;
@@ -167,6 +165,13 @@
       gap: 6px;
     }
 
+    .hero-date {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
     .small-note {
       color: var(--muted);
       font-size: 0.73rem;
@@ -178,7 +183,8 @@
     .field-grid,
     .button-row,
     .button-row-1,
-    .analytics-grid {
+    .analytics-grid,
+    .control-row {
       display: grid;
       gap: 8px;
     }
@@ -186,21 +192,23 @@
     .metric-grid-2,
     .field-grid,
     .button-row,
-    .analytics-grid { grid-template-columns: 1fr 1fr; }
+    .analytics-grid,
+    .control-row {
+      grid-template-columns: 1fr 1fr;
+    }
 
     .metric-grid-4 { grid-template-columns: repeat(4, 1fr); }
     .button-row-1 { grid-template-columns: 1fr; }
+
+    .compact-card {
+      min-height: 100%;
+    }
 
     .weather-card,
     .metric-box,
     .schedule-box,
     .field input,
     .field select {
-
-      .weather-card {
-  padding: 6px !important;
-  min-height: 60px !important;
-}
       background: rgba(255,255,255,0.64);
       border: 1px solid var(--line);
       border-radius: 14px;
@@ -211,7 +219,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      min-height: 74px;
+      min-height: 60px;
       padding: 8px;
     }
 
@@ -220,8 +228,9 @@
       height: 34px;
       display: grid;
       place-items: center;
-      font-size: 1.35rem;
+      font-size: 0.9rem;
       flex: 0 0 34px;
+      color: var(--teal-dark);
     }
 
     .weather-title,
@@ -246,6 +255,7 @@
 
     .weather-value { font-size: 0.85rem; }
     .metric-value { font-size: 1.2rem; }
+
     .metric-sub {
       color: var(--muted);
       font-size: 0.73rem;
@@ -275,56 +285,66 @@
 
     .field input::placeholder { color: #88a5aa; }
 
-.moisture-wrap {
-  display: grid;
-  gap: 10px;
-  justify-items: center;
-  padding: 6px 0 2px;
-}
+    .moisture-wrap {
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+      padding: 6px 0 2px;
+    }
 
-.moisture-bar-outer {
-  position: relative;
-  width: 70px;
-  height: 160px;
-  border-radius: 16px;
-  border: 2px solid #bfe3e3;
-  background: rgba(255,255,255,0.7);
-  overflow: hidden;
-}
+    .moisture-bar-outer {
+      position: relative;
+      width: 72px;
+      height: 165px;
+      border-radius: 18px;
+      border: 2px solid #bfe3e3;
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(230,244,244,0.85));
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.6);
+    }
 
-.moisture-fill {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 34%;
-  background: linear-gradient(180deg, #7ed6ff, #2e97df);
-  transition: height 0.4s ease;
-}
+    .moisture-fill {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 34%;
+      background: linear-gradient(180deg, #7ed6ff 0%, #47b8f0 45%, #2e97df 100%);
+      transition: height 0.45s ease, background 0.45s ease;
+      border-radius: 0 0 16px 16px;
+    }
 
-.target-line {
-  position: absolute;
-  width: 100%;
-  border-top: 2px dashed #f0ad4e;
-  bottom: 40%;
-}
+    .target-line {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      border-top: 3px dashed #f0ad4e;
+      bottom: 40%;
+      z-index: 2;
+    }
 
-.moisture-percent {
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: #255b68;
-}
+    .moisture-percent {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #255b68;
+      line-height: 1;
+    }
 
-.moisture-label {
-  font-size: 0.9rem;
-  color: #4f7279;
-}
-
-    .soil-ring .metric-value { font-size: 1.15rem; }
-    .soil-ring-label {
-      color: var(--muted);
-      font-size: 0.78rem;
+    .moisture-label {
+      font-size: 0.92rem;
       font-weight: 700;
-      margin-top: 4px;
+      color: #4f7279;
+    }
+
+    .moisture-status {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #255b68;
+    }
+
+    .moisture-note {
+      font-size: 0.78rem;
+      color: var(--muted);
     }
 
     .control-value {
@@ -368,7 +388,7 @@
     .schedule-value {
       font-weight: 900;
       color: var(--text);
-      font-size: 1.05rem;
+      font-size: 1.02rem;
     }
 
     .date-chip-wrap {
@@ -476,12 +496,15 @@
     .warn { color: #d18b11; }
     .bad { color: #ef6f6f; }
 
-    @media (max-width: 360px) {
+    @media (max-width: 380px) {
+      .control-row,
       .metric-grid-2,
       .metric-grid-4,
       .field-grid,
       .button-row,
-      .analytics-grid { grid-template-columns: 1fr; }
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -490,8 +513,8 @@
     <div class="topbar">
       <div class="brand-wrap">
         <div class="brand-logo">
-  <img src="logo.png" alt="ET Squad Logo" class="logo-img">
-</div>
+          <img src="logo.png" alt="ET Squad Logo" class="logo-img">
+        </div>
         <div class="brand-text">
           <h1>ET Squad</h1>
           <p>Evapotranspiration-based irrigation monitoring and decision support</p>
@@ -507,31 +530,32 @@
       <section id="page-home" class="page active">
         <div class="section">
           <div class="card">
+            <div class="hero-date" id="todayText">Today is Monday, April 14, 2026.</div>
             <h3>🌤️ Current Weather Conditions</h3>
             <div class="metric-grid-2">
               <div class="weather-card">
-                <div class="weather-icon">🌡️</div>
+                <div class="weather-icon">●</div>
                 <div>
                   <div class="weather-title">Air Temperature</div>
                   <div class="weather-value" id="tempValue">31.2 °C</div>
                 </div>
               </div>
               <div class="weather-card">
-                <div class="weather-icon">💧</div>
+                <div class="weather-icon">●</div>
                 <div>
                   <div class="weather-title">Relative Humidity</div>
                   <div class="weather-value" id="rhValue">68 %</div>
                 </div>
               </div>
               <div class="weather-card">
-                <div class="weather-icon">☀️</div>
+                <div class="weather-icon">●</div>
                 <div>
                   <div class="weather-title">Solar Radiation</div>
                   <div class="weather-value" id="solarValue">18.5 MJ/m²</div>
                 </div>
               </div>
               <div class="weather-card">
-                <div class="weather-icon">🌀</div>
+                <div class="weather-icon">●</div>
                 <div>
                   <div class="weather-title">Wind Speed</div>
                   <div class="weather-value" id="windValue">1.9 m/s</div>
@@ -540,39 +564,41 @@
             </div>
           </div>
 
-          <div class="card">
-            <h3>🪴 Soil Moisture Status</h3>
-         <div class="moisture-wrap">
-  <div class="moisture-bar-outer">
-    <div id="targetLine" class="target-line"></div>
-    <div id="moistureFill" class="moisture-fill"></div>
-  </div>
-
-  <div class="moisture-percent" id="soilValue">34%</div>
-  <div class="moisture-label">Soil Moisture</div>
-  <div class="moisture-status" id="soilStatusText">Below target</div>
-  <div class="moisture-note">Safe level: <span id="targetSoilLabel">40%</span></div>
-</div>
-          </div>
-
-          <div class="card">
-            <h3>☑️ Irrigation Control</h3>
-            <div class="control-value" id="pumpState">Stopped</div>
-            <div class="button-row">
-              <button class="btn btn-green" id="startBtn">Start</button>
-              <button class="btn btn-red" id="stopBtn">Stop</button>
-            </div>
-            <div class="button-row-1" style="margin-top:8px;">
-              <button class="btn btn-blue" id="rainBtn">Rain Shut Off: OFF</button>
-            </div>
-            <div class="schedule-box">
-              <div>
-                <div class="schedule-title">Next Watering</div>
-                <div class="schedule-value" id="nextWatering">April 14, 2026</div>
+          <div class="control-row">
+            <div class="card compact-card">
+              <h3>🪴 Soil Moisture Status</h3>
+              <div class="moisture-wrap">
+                <div class="moisture-bar-outer">
+                  <div id="targetLine" class="target-line"></div>
+                  <div id="moistureFill" class="moisture-fill"></div>
+                </div>
+                <div class="moisture-percent" id="soilValue">34%</div>
+                <div class="moisture-label">Soil Moisture</div>
+                <div class="moisture-status" id="soilStatusText">Below target</div>
+                <div class="moisture-note">Safe level: <span id="targetSoilLabel">40%</span></div>
+                <div class="small-note">Update your CSV to display the latest soil moisture reading.</div>
               </div>
-              <div style="text-align:right;">
-                <div class="schedule-title">Schedule</div>
-                <div class="small-note" id="selectedScheduleNote">Selected irrigation date</div>
+            </div>
+
+            <div class="card compact-card">
+              <h3>☑️ Irrigation Control</h3>
+              <div class="control-value" id="pumpState">Stopped</div>
+              <div class="button-row">
+                <button class="btn btn-green" id="startBtn">Start</button>
+                <button class="btn btn-red" id="stopBtn">Stop</button>
+              </div>
+              <div class="button-row-1" style="margin-top:8px;">
+                <button class="btn btn-blue" id="rainBtn">Rain Shut Off: OFF</button>
+              </div>
+              <div class="schedule-box">
+                <div>
+                  <div class="schedule-title">Next Watering</div>
+                  <div class="schedule-value" id="nextWatering">April 14, 2026</div>
+                </div>
+                <div style="text-align:right;">
+                  <div class="schedule-title">Schedule</div>
+                  <div class="small-note" id="selectedScheduleNote">Selected irrigation date</div>
+                </div>
               </div>
             </div>
           </div>
@@ -797,6 +823,16 @@
       $('clockText').textContent = now.toLocaleTimeString('en-US');
     }
 
+    function formatTodayText(dateStr) {
+      const d = new Date(dateStr);
+      return `Today is ${d.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      })}.`;
+    }
+
     function getSettings() {
       return {
         kc: parseFloat($('kcInput').value) || 0.8,
@@ -842,27 +878,47 @@
       const record = sampleData[selectedIndex];
       const c = calcForRecord(record);
 
+      $('todayText').textContent = formatTodayText(record.date);
+
       $('tempValue').textContent = `${record.temp.toFixed(1)} °C`;
       $('rhValue').textContent = `${record.rh.toFixed(0)} %`;
       $('solarValue').textContent = `${record.solar.toFixed(1)} MJ/m²`;
       $('windValue').textContent = `${record.wind.toFixed(1)} m/s`;
 
-      $('soilValue').textContent = `${c.soilCurrent.toFixed(0)} %`;
       const soilPercent = Math.max(0, Math.min(c.soilCurrent, 100));
+      $('soilValue').textContent = `${soilPercent.toFixed(0)}%`;
+      $('soilStatusText').textContent = soilPercent >= c.targetSoil ? 'At or above target' : 'Below target';
+      $('targetSoilLabel').textContent = `${c.targetSoil.toFixed(0)}%`;
 
-document.getElementById("moistureFill").style.height = `${soilPercent}%`;
-document.getElementById("targetLine").style.bottom = `${c.targetSoil}%`;
-      $('soilStatusText').textContent = c.soilCurrent >= c.targetSoil ? 'At or above target' : 'No data yet';
+      $('moistureFill').style.height = `${soilPercent}%`;
+      $('targetLine').style.bottom = `${c.targetSoil}%`;
 
-      $('pumpState').textContent = rainShutOff ? 'Rain Shutoff Active' : (pumpRunning ? 'Running' : 'Stopped');
-      $('pumpState').className = 'control-value ' + (rainShutOff ? 'warn' : (pumpRunning ? 'ok' : ''));
+      if (soilPercent < c.targetSoil - 10) {
+        $('moistureFill').style.background = 'linear-gradient(180deg, #9ad8ff 0%, #5cbcf2 45%, #348fe0 100%)';
+      } else if (soilPercent < c.targetSoil) {
+        $('moistureFill').style.background = 'linear-gradient(180deg, #8ee0ff 0%, #4ec7ef 45%, #2ca8db 100%)';
+      } else {
+        $('moistureFill').style.background = 'linear-gradient(180deg, #86efac 0%, #4fd97a 45%, #28b463 100%)';
+      }
+
+      $('pumpState').textContent = rainShutOff
+        ? 'Rain Shutoff Active'
+        : (pumpRunning ? 'Running' : 'Stopped');
+
+      $('pumpState').className =
+        'control-value ' + (rainShutOff ? 'warn' : (pumpRunning ? 'ok' : ''));
+
       $('rainBtn').textContent = `Rain Shut Off: ${rainShutOff ? 'ON' : 'OFF'}`;
 
       $('fieldAreaCard').textContent = `${c.fieldArea.toFixed(0)} m²`;
       $('recommendedVolumeCard').textContent = `${c.modeledLiters.toFixed(0)} L`;
       $('appliedIrrigationCard').textContent = `${c.appliedMm.toFixed(2)} mm`;
       $('growthStageCard').textContent = c.growthStage;
-      $('nextWatering').textContent = new Date(record.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      $('nextWatering').textContent = new Date(record.date).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
     }
 
     function renderAnalyticsCards() {
@@ -876,25 +932,25 @@ document.getElementById("targetLine").style.bottom = `${c.targetSoil}%`;
       $('dataStatus').textContent = 'Live Demo';
     }
 
-function drawAxes(ctx, w, h, left, top, right, bottom) {
-  ctx.strokeStyle = '#bfdede';
-  ctx.lineWidth = 1.4;
-  ctx.beginPath();
-  ctx.moveTo(left, top);
-  ctx.lineTo(left, h - bottom);
-  ctx.lineTo(w - right, h - bottom);
-  ctx.stroke();
+    function drawAxes(ctx, w, h, left, top, right, bottom) {
+      ctx.strokeStyle = '#bfdede';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(left, top);
+      ctx.lineTo(left, h - bottom);
+      ctx.lineTo(w - right, h - bottom);
+      ctx.stroke();
     }
 
-function drawLegend(ctx, items, x, y) {
-  ctx.font = '12px Arial';
-  items.forEach((item, i) => {
-    const yy = y + i * 20;
-    ctx.fillStyle = item.color;
-    ctx.fillRect(x, yy - 10, 26, 10);
-    ctx.fillStyle = '#4f7279';
-    ctx.fillText(item.label, x + 34, yy - 1);
-  });
+    function drawLegend(ctx, items, x, y) {
+      ctx.font = '12px Arial';
+      items.forEach((item, i) => {
+        const yy = y + i * 20;
+        ctx.fillStyle = item.color;
+        ctx.fillRect(x, yy - 10, 26, 10);
+        ctx.fillStyle = '#4f7279';
+        ctx.fillText(item.label, x + 34, yy - 1);
+      });
     }
 
     function drawSoilChart() {
@@ -961,7 +1017,7 @@ function drawLegend(ctx, items, x, y) {
         ctx.arc(x, y, 5, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = '#6f939';
+        ctx.fillStyle = '#6f9399';
         ctx.font = '11px Arial';
         ctx.textAlign = 'center';
         const label = new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -1032,8 +1088,8 @@ function drawLegend(ctx, items, x, y) {
         ctx.fillStyle = colors[i];
         ctx.fillRect(x, y, barW, barH);
         ctx.strokeStyle = '#ffffff';
-ctx.lineWidth = 1;
-ctx.strokeRect(x, y, barW, barH);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y, barW, barH);
       });
 
       ctx.fillStyle = '#6f9399';
