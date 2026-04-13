@@ -188,7 +188,7 @@
     .button-row,
     .analytics-grid { grid-template-columns: 1fr 1fr; }
 
-    .metric-grid-4 { grid-template-columns: 1fr 1fr; }
+    .metric-grid-4 { grid-template-columns: repeat(4, 1fr); }
     .button-row-1 { grid-template-columns: 1fr; }
 
     .weather-card,
@@ -207,7 +207,7 @@
       align-items: center;
       gap: 10px;
       min-height: 74px;
-      padding: 12px;
+      padding: 8px;
     }
 
     .weather-icon {
@@ -224,7 +224,7 @@
     .field label,
     .table-note {
       color: var(--muted);
-      font-size: 0.7rem;
+      font-size: 0.6rem;
       text-transform: uppercase;
       letter-spacing: 0.4px;
       font-weight: 700;
@@ -239,7 +239,7 @@
       line-height: 1.15;
     }
 
-    .weather-value { font-size: 1rem; }
+    .weather-value { font-size: 0.85rem; }
     .metric-value { font-size: 1.2rem; }
     .metric-sub {
       color: var(--muted);
