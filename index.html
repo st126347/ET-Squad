@@ -94,15 +94,18 @@
 
     .brand-text h1 {
       margin: 0;
-      font-size: 1.05rem;
-      color: var(--text);
+      font-size: 1.12rem;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      color: #1f525d;
       line-height: 1.1;
     }
 
     .brand-text p {
-      margin: 3px 0 0;
-      color: var(--muted);
-      font-size: 0.72rem;
+      margin: 4px 0 0;
+      color: #5f858c;
+      font-size: 0.74rem;
+      font-weight: 500;
       line-height: 1.35;
     }
 
@@ -157,9 +160,11 @@
     }
 
     .card h3 {
-      margin: 0 0 8px;
-      font-size: 0.95rem;
-      color: var(--text);
+      margin: 0 0 10px;
+      font-size: 0.98rem;
+      font-weight: 800;
+      letter-spacing: 0.15px;
+      color: #1f525d;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -173,9 +178,10 @@
     }
 
     .small-note {
-      color: var(--muted);
-      font-size: 0.73rem;
-      line-height: 1.4;
+      color: #698b92;
+      font-size: 0.75rem;
+      font-weight: 500;
+      line-height: 1.45;
     }
 
     .metric-grid-2,
@@ -209,10 +215,12 @@
     .schedule-box,
     .field input,
     .field select {
-      background: rgba(255,255,255,0.64);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
+      width: 100%;
+      padding: 11px 12px;
+      color: #214d58;
+      font-size: 0.94rem;
+      font-weight: 600;
+      outline: none;
     }
 
     .weather-card {
@@ -237,34 +245,39 @@
     .metric-label,
     .field label,
     .table-note {
-      color: var(--muted);
-      font-size: 0.6rem;
+      color: #6b8d94;
+      font-size: 0.64rem;
       text-transform: uppercase;
-      letter-spacing: 0.4px;
-      font-weight: 700;
+      letter-spacing: 0.55px;
+      font-weight: 800;
       margin-bottom: 5px;
     }
 
     .weather-value,
     .metric-value,
     .control-value {
+      text-align: center;
+      font-size: 1.46rem;
       font-weight: 900;
-      color: var(--text);
-      line-height: 1.15;
+      color: #11aeb2;
+      margin: 3px 0 6px;
+      letter-spacing: 0.2px;
     }
 
-    .weather-value { font-size: 0.85rem; }
-    .metric-value { font-size: 1.2rem; }
+    .weather-value { font-size: 0.92rem; }
+    .metric-value { font-size: 1.26rem; }
 
     .metric-sub {
-      color: var(--muted);
-      font-size: 0.73rem;
-      margin-top: 3px;
+      color: #6e8f95;
+      font-size: 0.74rem;
+      font-weight: 500;
+      margin-top: 4px;
+      line-height: 1.35;
     }
 
     .metric-box {
-      padding: 12px;
-      min-height: 92px;
+      padding: 13px;
+      min-height: 96px;
     }
 
     .field {
@@ -358,11 +371,12 @@
       border: none;
       border-radius: 14px;
       padding: 12px 12px;
-      font-size: 0.92rem;
+      font-size: 0.93rem;
       font-weight: 800;
+      letter-spacing: 0.15px;
       color: white;
       cursor: pointer;
-      box-shadow: var(--shadow);
+      box-shadow: 0 8px 18px rgba(77, 132, 142, 0.14);
     }
 
     .btn-green { background: linear-gradient(135deg, var(--teal), #57d6a0); }
@@ -378,17 +392,19 @@
     }
 
     .schedule-title {
-      color: var(--muted);
+      color: #6b8d94;
       font-size: 0.68rem;
       text-transform: uppercase;
-      font-weight: 700;
+      font-weight: 800;
+      letter-spacing: 0.45px;
       margin-bottom: 3px;
     }
 
     .schedule-value {
       font-weight: 900;
-      color: var(--text);
-      font-size: 1.02rem;
+      color: #1f525d;
+      font-size: 0.98rem;
+      line-height: 1.2;
     }
 
     .date-chip-wrap {
@@ -534,11 +550,35 @@
             <h3>🌤️ Current Weather Conditions</h3>
             <div class="metric-grid-2">
               <div class="weather-card">
-                <div class="weather-icon">●</div>
+                <div class="weather-icon">◉</div>
                 <div>
                   <div class="weather-title">Air Temperature</div>
                   <div class="weather-value" id="tempValue">31.2 °C</div>
                 </div>
+              </div>
+              <div class="weather-card">
+                <div class="weather-icon">◉</div>
+                <div>
+                  <div class="weather-title">Relative Humidity</div>
+                  <div class="weather-value" id="rhValue">68 %</div>
+                </div>
+              </div>
+              <div class="weather-card">
+                <div class="weather-icon">◉</div>
+                <div>
+                  <div class="weather-title">Solar Radiation</div>
+                  <div class="weather-value" id="solarValue">18.5 MJ/m²</div>
+                </div>
+              </div>
+              <div class="weather-card">
+                <div class="weather-icon">◉</div>
+                <div>
+                  <div class="weather-title">Wind Speed</div>
+                  <div class="weather-value" id="windValue">1.9 m/s</div>
+                </div>
+              </div>
+            </div>
+          </div>
               </div>
               <div class="weather-card">
                 <div class="weather-icon">●</div>
@@ -593,7 +633,7 @@
               <div class="schedule-box">
                 <div>
                   <div class="schedule-title">Next Watering</div>
-                  <div class="schedule-value" id="nextWatering">April 14, 2026</div>
+                  <div class="schedule-value" id="nextWatering">April 14, 2026 · 6:00 AM</div>
                 </div>
                 <div style="text-align:right;">
                   <div class="schedule-title">Schedule</div>
@@ -914,10 +954,15 @@
       $('recommendedVolumeCard').textContent = `${c.modeledLiters.toFixed(0)} L`;
       $('appliedIrrigationCard').textContent = `${c.appliedMm.toFixed(2)} mm`;
       $('growthStageCard').textContent = c.growthStage;
-      $('nextWatering').textContent = new Date(record.date).toLocaleDateString('en-US', {
+
+      const wateringDate = new Date(`${record.date}T${c.startTime || '06:00'}`);
+      $('nextWatering').textContent = wateringDate.toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric'
+      }) + ' · ' + wateringDate.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit'
       });
     }
 
