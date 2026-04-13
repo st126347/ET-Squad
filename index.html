@@ -2,860 +2,447 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>ET Squad Smart Irrigation Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
- <style>
-  :root{
-    --bg-main:#dff6f4;
-    --bg-soft:#eefbfa;
-    --bg-accent:#1f6f78;
-    --card:#f8fcfc;
-    --card-2:#ffffff;
-    --border:#cfe8e6;
-    --text:#23404a;
-    --text-soft:#5b7a84;
-    --teal:#22c7c9;
-    --aqua:#63e6d8;
-    --mint:#6ee7b7;
-    --blue:#4aa3df;
-    --violet:#6c63ff;
-    --good:#39c98a;
-    --warn:#f5b942;
-    --danger:#ef6a6a;
-    --shadow:0 10px 24px rgba(31,111,120,0.10);
-  }
-
-  * { box-sizing: border-box; }
-
-  body {
-    margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    background: linear-gradient(180deg, #dff6f4 0%, #d7f0ef 100%);
-    color: var(--text);
-  }
-
-  .app-shell {
-    min-height: 100vh;
-    max-width: 430px;
-    margin: 0 auto;
-    background:
-      radial-gradient(circle at top left, rgba(99,230,216,0.35), transparent 28%),
-      radial-gradient(circle at top right, rgba(108,99,255,0.10), transparent 22%),
-      linear-gradient(180deg, #e7f8f7 0%, #d9f1ef 100%);
-    padding-bottom: 86px;
-    box-shadow: 0 0 0 1px rgba(255,255,255,0.55);
-  }
-
-  .topbar {
-    padding: 14px 14px 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    backdrop-filter: blur(10px);
-    background: rgba(239,251,250,0.88);
-    border-bottom: 1px solid rgba(34,199,201,0.12);
-  }
-
-  .brand-wrap {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    min-width: 0;
-  }
-
-  .brand-logo {
-    width: 50px;
-    height: 50px;
-    flex: 0 0 50px;
-    border-radius: 50%;
-    overflow: hidden;
-    background: linear-gradient(135deg, #ecffff, #d9f7f5);
-    box-shadow: 0 0 0 2px rgba(34,199,201,0.12), var(--shadow);
-  }
-
-  .brand-text h1 {
-    margin: 0;
-    font-size: 1.18rem;
-    color: var(--bg-accent);
-  }
-
-  .brand-text p {
-    margin: 4px 0 0;
-    color: var(--text-soft);
-    font-size: 0.79rem;
-    line-height: 1.35;
-  }
-
-  .status-stack {
-    display: grid;
-    gap: 6px;
-    justify-items: end;
-  }
-
-  .pill {
-    padding: 8px 10px;
-    border-radius: 12px;
-    background: var(--card-2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-weight: 700;
-    font-size: 0.78rem;
-    white-space: nowrap;
-    box-shadow: 0 4px 12px rgba(34,199,201,0.08);
-  }
-
-  .pill.status {
-    background: linear-gradient(135deg, var(--teal), var(--aqua));
-    color: white;
-    border-color: transparent;
-  }
-
-  .content { padding: 6px 12px 18px; }
-  .page { display: none; }
-  .page.active { display: block; }
-
-  .section {
-    display: grid;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-
-  .card {
-    background: rgba(255,255,255,0.92);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 14px;
-    box-shadow: var(--shadow);
-  }
-
-  .card h3 {
-    margin: 0 0 8px;
-    font-size: 0.95rem;
-    color: var(--bg-accent);
-  }
-
-  .hero-date {
-    color: var(--text-soft);
-    font-size: 0.82rem;
-    font-weight: 700;
-    margin-bottom: 4px;
-  }
-
-  .hero-title {
-    font-size: 1.16rem;
-    font-weight: 900;
-    color: var(--bg-accent);
-    margin-bottom: 4px;
-  }
-
-  .hero-tagline {
-    font-size: 0.82rem;
-    color: var(--text-soft);
-    margin-bottom: 8px;
-  }
-
-  .small-note {
-    color: var(--text-soft);
-    font-size: 0.78rem;
-    line-height: 1.45;
-  }
-
-  .metric-grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .metric-grid-4 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .metric-box {
-    background: linear-gradient(180deg, #ffffff 0%, #f6fbfb 100%);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 12px;
-  }
-
-  .metric-label {
-    color: var(--text-soft);
-    font-size: 0.72rem;
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-  }
-
-  .metric-value {
-    color: var(--bg-accent);
-    font-size: 1.08rem;
-    font-weight: 900;
-    line-height: 1.15;
-  }
-
-  .metric-sub {
-    color: #6d8f98;
-    font-size: 0.74rem;
-    margin-top: 4px;
-  }
-
-  .weather-card {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-height: 76px;
-    padding: 12px;
-    background: linear-gradient(180deg, #ffffff 0%, #f8fcfc 100%);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    box-shadow: 0 6px 16px rgba(34,199,201,0.06);
-  }
-
-  .weather-icon {
-    width: 32px;
-    height: 32px;
-    flex: 0 0 32px;
-  }
-
-  .weather-title {
-    font-size: 0.72rem;
-    color: var(--text-soft);
-    margin-bottom: 3px;
-    font-weight: 700;
-  }
-
-  .weather-value {
-    font-size: 1.06rem;
-    font-weight: 900;
-    color: var(--bg-accent);
-  }
-
-  .control-value {
-    font-size: 1.5rem;
-    font-weight: 900;
-    color: var(--teal);
-    text-align: center;
-    margin: 8px 0 4px;
-  }
-
-  .button-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 10px;
-  }
-
-  .button-row-1 {
-    display: grid;
-    gap: 8px;
-    margin-top: 8px;
-  }
-
-  .btn {
-    border: none;
-    border-radius: 14px;
-    padding: 12px 12px;
-    font-size: 0.86rem;
-    font-weight: 800;
-    color: white;
-    cursor: pointer;
-    box-shadow: 0 8px 18px rgba(31,111,120,0.12);
-  }
-
-  .btn-green { background: linear-gradient(135deg, var(--teal), var(--mint)); }
-  .btn-red { background: linear-gradient(135deg, #ff8f8f, var(--danger)); }
-  .btn-blue { background: linear-gradient(135deg, var(--blue), var(--violet)); }
-  .btn-gold { background: linear-gradient(135deg, #5fdad1, var(--teal)); }
-
-  .field-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .field {
-    display: grid;
-    gap: 5px;
-  }
-
-  .field label {
-    color: var(--text);
-    font-size: 0.76rem;
-    font-weight: 700;
-  }
-
-  .field input, .field select {
-    width: 100%;
-    padding: 10px 11px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: #ffffff;
-    color: var(--text);
-    font-size: 0.88rem;
-    outline: none;
-  }
-
-  .field input:focus, .field select:focus {
-    border-color: var(--teal);
-    box-shadow: 0 0 0 3px rgba(34,199,201,0.12);
-  }
-
-  .soil-wrap {
-    display: grid;
-    gap: 8px;
-    justify-items: center;
-  }
-
-  .soil-gauge {
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
-    padding: 10px;
-    display: grid;
-    place-items: center;
-    background: conic-gradient(var(--teal) 0deg, rgba(34,199,201,0.15) 0deg);
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
-    transition: background 0.3s ease;
-  }
-
-  .soil-gauge-inner {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: linear-gradient(180deg, #ffffff 0%, #f5fbfb 100%);
-    display: grid;
-    place-items: center;
-    padding: 14px;
-    text-align: center;
-    border: 1px solid var(--border);
-  }
-
-  .soil-gauge-icon {
-    width: 76px;
-    height: 76px;
-    margin-bottom: 8px;
-  }
-
-  .soil-value {
-    font-size: 1.7rem;
-    font-weight: 900;
-    color: var(--bg-accent);
-    line-height: 1;
-  }
-
-  .soil-label {
-    margin-top: 3px;
-    color: var(--text-soft);
-    font-size: 0.82rem;
-    font-weight: 700;
-  }
-
-  .soil-state {
-    font-weight: 800;
-    font-size: 0.82rem;
-    color: var(--bg-accent);
-  }
-
-  .schedule-box {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    margin-top: 10px;
-    padding: 10px 12px;
-    border-radius: 14px;
-    background: linear-gradient(180deg, #ffffff 0%, #f6fbfb 100%);
-    border: 1px solid var(--border);
-  }
-
-  .schedule-title {
-    color: var(--text-soft);
-    font-size: 0.74rem;
-    font-weight: 700;
-    margin-bottom: 3px;
-  }
-
-  .schedule-value {
-    color: var(--bg-accent);
-    font-size: 0.95rem;
-    font-weight: 900;
-  }
-
-  .date-chip-wrap {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 8px;
-  }
-
-  .date-chip {
-    border: 1px solid var(--border);
-    background: #ffffff;
-    color: var(--text);
-    border-radius: 999px;
-    padding: 8px 10px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  .date-chip.active {
-    background: linear-gradient(135deg, var(--teal), var(--aqua));
-    color: white;
-    border-color: transparent;
-  }
-
-  .table-wrap {
-    overflow-x: auto;
-    border-radius: 14px;
-    border: 1px solid var(--border);
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.75rem;
-    color: var(--text);
-    background: #fff;
-  }
-
-  th, td {
-    padding: 7px 7px;
-    border-bottom: 1px solid #e8f1f2;
-    text-align: left;
-    white-space: nowrap;
-  }
-
-  th {
-    color: var(--bg-accent);
-    background: #f4fbfb;
-  }
-
-  .filter-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  canvas {
-    width: 100% !important;
-    height: 240px !important;
-  }
-
-  .bottom-nav {
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 0;
-    width: min(430px, 100%);
-    background: rgba(248,252,252,0.94);
-    border-top: 1px solid var(--border);
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    padding: 10px 10px 16px;
-    gap: 8px;
-    backdrop-filter: blur(10px);
-  }
-
-  .nav-btn {
-    border: none;
-    border-radius: 14px;
-    padding: 11px 8px;
-    background: #ffffff;
-    color: var(--text-soft);
-    font-weight: 800;
-    cursor: pointer;
-    font-size: 0.8rem;
-    border: 1px solid var(--border);
-  }
-
-  .nav-btn.active {
-    background: linear-gradient(135deg, var(--teal), var(--aqua));
-    color: white;
-    border-color: transparent;
-  }
-</style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ET Squad</title>
+  <style>
     * { box-sizing: border-box; }
+
+    :root {
+      --bg: #dff1f1;
+      --bg-soft: #d7ecec;
+      --card: #f7fbfb;
+      --line: #b9dfdf;
+      --text: #255b68;
+      --muted: #6e8f95;
+      --teal: #34d4d6;
+      --teal-dark: #1ebdc0;
+      --green: #5ad67d;
+      --green-dark: #33bf5a;
+      --blue: #6ca8f3;
+      --blue-dark: #5b6cf0;
+      --red: #f69090;
+      --red-dark: #ef6f6f;
+      --gray-bar: #b8c1d0;
+      --shadow: 0 8px 18px rgba(77, 132, 142, 0.10);
+      --radius: 18px;
+    }
+
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: #08110b;
-      color: #ecfdf5;
+      background: var(--bg);
+      color: var(--text);
     }
+
     .app-shell {
       min-height: 100vh;
       max-width: 430px;
       margin: 0 auto;
-      background: radial-gradient(circle at top, rgba(34,197,94,0.12), transparent 32%), linear-gradient(180deg, #08110b 0%, #0d1d13 35%, #102a18 100%);
-      padding-bottom: 86px;
-      box-shadow: 0 0 0 1px rgba(255,255,255,0.03);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.08)),
+        var(--bg-soft);
+      border-left: 1px solid rgba(255,255,255,0.35);
+      border-right: 1px solid rgba(255,255,255,0.35);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.25);
+      padding-bottom: 84px;
     }
+
     .topbar {
-      padding: 14px 14px 8px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       gap: 10px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      backdrop-filter: blur(10px);
-      background: rgba(8,17,11,0.92);
+      padding: 12px 10px 8px;
+      background: rgba(223,241,241,0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(185,223,223,0.7);
     }
+
     .brand-wrap {
       display: flex;
-      gap: 10px;
       align-items: center;
+      gap: 10px;
       min-width: 0;
     }
+
     .brand-logo {
       width: 50px;
       height: 50px;
-      flex: 0 0 50px;
       border-radius: 50%;
-      overflow: hidden;
-      box-shadow: 0 0 0 2px rgba(255,255,255,0.08), 0 10px 20px rgba(0,0,0,0.22);
-      background: rgba(255,255,255,0.06);
+      display: grid;
+      place-items: center;
+      background: #0d0f10;
+      box-shadow: inset 0 0 0 2px #39db69, 0 3px 8px rgba(0,0,0,0.18);
+      font-size: 1.4rem;
+      color: #34d4d6;
     }
+
     .brand-text h1 {
       margin: 0;
-      font-size: 1.18rem;
-      color: #f0fdf4;
+      font-size: 1.05rem;
+      color: var(--text);
+      line-height: 1.1;
     }
+
     .brand-text p {
-      margin: 4px 0 0;
-      color: #a7f3d0;
-      font-size: 0.79rem;
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 0.72rem;
       line-height: 1.35;
     }
+
     .status-stack {
       display: grid;
       gap: 6px;
       justify-items: end;
+      flex: 0 0 auto;
     }
-    .pill {
-      padding: 8px 10px;
+
+    .clock-pill,
+    .status-pill {
       border-radius: 12px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(74, 222, 128, 0.14);
-      color: #ecfdf5;
-      font-weight: 700;
+      padding: 7px 10px;
       font-size: 0.78rem;
+      font-weight: 700;
       white-space: nowrap;
+      border: 1px solid rgba(185,223,223,0.9);
+      background: rgba(255,255,255,0.7);
+      color: var(--text);
+      box-shadow: var(--shadow);
     }
-    .pill.status {
-      background: linear-gradient(135deg, #166534, #22c55e);
+
+    .status-pill {
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
       color: white;
+      border-color: transparent;
+      min-width: 78px;
+      text-align: center;
     }
-    .content { padding: 6px 12px 18px; }
+
+    .content {
+      padding: 8px 8px 18px;
+      display: grid;
+      gap: 12px;
+    }
+
     .page { display: none; }
     .page.active { display: block; }
+
     .section {
       display: grid;
-      gap: 10px;
-      margin-bottom: 12px;
+      gap: 12px;
     }
+
     .card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(74,222,128,0.12);
-      border-radius: 18px;
-      padding: 14px;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+      background: rgba(255,255,255,0.78);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px;
+      box-shadow: var(--shadow);
     }
+
     .card h3 {
       margin: 0 0 8px;
       font-size: 0.95rem;
-      color: #86efac;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .hero-date {
-      color: #bbf7d0;
-      font-size: 0.82rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    .hero-title {
-      font-size: 1.16rem;
-      font-weight: 900;
-      color: #f0fdf4;
-      margin-bottom: 4px;
-    }
-    .hero-tagline {
-      font-size: 0.82rem;
-      color: #d1fae5;
-      margin-bottom: 8px;
-    }
+
     .small-note {
-      color: #a7f3d0;
-      font-size: 0.78rem;
-      line-height: 1.45;
+      color: var(--muted);
+      font-size: 0.73rem;
+      line-height: 1.4;
     }
-    .metric-grid-2 {
+
+    .metric-grid-2,
+    .metric-grid-4,
+    .field-grid,
+    .button-row,
+    .button-row-1,
+    .analytics-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .metric-grid-4 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
       gap: 8px;
     }
-    .metric-box {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(74,222,128,0.10);
-      border-radius: 16px;
-      padding: 12px;
+
+    .metric-grid-2,
+    .field-grid,
+    .button-row,
+    .analytics-grid { grid-template-columns: 1fr 1fr; }
+
+    .metric-grid-4 { grid-template-columns: 1fr 1fr; }
+    .button-row-1 { grid-template-columns: 1fr; }
+
+    .weather-card,
+    .metric-box,
+    .schedule-box,
+    .field input,
+    .field select {
+      background: rgba(255,255,255,0.64);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
     }
-    .metric-label {
-      color: #a7f3d0;
-      font-size: 0.72rem;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-    }
-    .metric-value {
-      color: #f0fdf4;
-      font-size: 1.08rem;
-      font-weight: 900;
-      line-height: 1.15;
-    }
-    .metric-sub {
-      color: #bbf7d0;
-      font-size: 0.74rem;
-      margin-top: 4px;
-    }
+
     .weather-card {
       display: flex;
       align-items: center;
       gap: 10px;
-      min-height: 76px;
+      min-height: 74px;
       padding: 12px;
-      background: rgba(221,255,245,0.08);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
     }
+
     .weather-icon {
-      width: 32px;
-      height: 32px;
-      flex: 0 0 32px;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      font-size: 1.35rem;
+      flex: 0 0 34px;
     }
-    .weather-title {
-      font-size: 0.72rem;
-      color: #cbd5e1;
-      margin-bottom: 3px;
+
+    .weather-title,
+    .metric-label,
+    .field label,
+    .table-note {
+      color: var(--muted);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
       font-weight: 700;
+      margin-bottom: 5px;
     }
-    .weather-value {
-      font-size: 1.06rem;
-      font-weight: 900;
-      color: #f8fafc;
-    }
+
+    .weather-value,
+    .metric-value,
     .control-value {
-      font-size: 1.5rem;
       font-weight: 900;
-      color: #4ade80;
-      text-align: center;
-      margin: 8px 0 4px;
+      color: var(--text);
+      line-height: 1.15;
     }
-    .button-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 10px;
+
+    .weather-value { font-size: 1rem; }
+    .metric-value { font-size: 1.2rem; }
+    .metric-sub {
+      color: var(--muted);
+      font-size: 0.73rem;
+      margin-top: 3px;
     }
-    .button-row-1 {
-      display: grid;
-      gap: 8px;
-      margin-top: 8px;
+
+    .metric-box {
+      padding: 12px;
+      min-height: 92px;
     }
-    .btn {
-      border: none;
-      border-radius: 14px;
-      padding: 12px 12px;
-      font-size: 0.86rem;
-      font-weight: 800;
-      color: white;
-      cursor: pointer;
-    }
-    .btn-green { background: linear-gradient(135deg, #22c55e, #166534); }
-    .btn-red { background: linear-gradient(135deg, #f87171, #b91c1c); }
-    .btn-blue { background: linear-gradient(135deg, #60a5fa, #1d4ed8); }
-    .btn-gold { background: linear-gradient(135deg, #f59e0b, #b45309); }
-    .field-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
+
     .field {
       display: grid;
       gap: 5px;
     }
-    .field label {
-      color: #bbf7d0;
-      font-size: 0.76rem;
-      font-weight: 700;
-    }
-    .field input, .field select {
+
+    .field.full { grid-column: 1 / -1; }
+
+    .field input,
+    .field select {
       width: 100%;
-      padding: 10px 11px;
-      border-radius: 12px;
-      border: 1px solid rgba(74,222,128,0.14);
-      background: rgba(255,255,255,0.05);
-      color: #ecfdf5;
-      font-size: 0.88rem;
+      padding: 11px 12px;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
     }
-    .soil-wrap {
+
+    .field input::placeholder { color: #88a5aa; }
+
+    .gauge-wrap {
       display: grid;
+      place-items: center;
       gap: 8px;
-      justify-items: center;
+      padding: 8px 0 2px;
     }
-    .soil-gauge {
-      width: 180px;
-      height: 180px;
+
+    .soil-ring {
+      width: 150px;
+      height: 150px;
       border-radius: 50%;
-      padding: 10px;
+      border: 2px solid #cfe9e9;
       display: grid;
       place-items: center;
-      background: conic-gradient(#22c55e 0deg, rgba(255,255,255,0.08) 0deg);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
-      transition: background 0.3s ease;
-    }
-    .soil-gauge-inner {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: linear-gradient(180deg, rgba(16,42,24,0.95), rgba(12,27,18,0.95));
-      display: grid;
-      place-items: center;
-      padding: 14px;
       text-align: center;
+      color: var(--text);
+      background: radial-gradient(circle at center, rgba(255,255,255,0.6), rgba(255,255,255,0.25));
     }
-    .soil-gauge-icon {
-      width: 76px;
-      height: 76px;
-      margin-bottom: 8px;
-    }
-    .soil-value {
-      font-size: 1.7rem;
-      font-weight: 900;
-      color: #f0fdf4;
+
+    .soil-icon {
+      font-size: 2.8rem;
       line-height: 1;
     }
-    .soil-label {
-      margin-top: 3px;
-      color: #a7f3d0;
-      font-size: 0.82rem;
+
+    .soil-ring .metric-value { font-size: 1.15rem; }
+    .soil-ring-label {
+      color: var(--muted);
+      font-size: 0.78rem;
       font-weight: 700;
+      margin-top: 4px;
     }
-    .soil-state {
+
+    .control-value {
+      text-align: center;
+      font-size: 1.4rem;
+      color: var(--teal-dark);
+      margin: 2px 0 4px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 14px;
+      padding: 12px 12px;
+      font-size: 0.92rem;
       font-weight: 800;
-      font-size: 0.82rem;
-      color: #bbf7d0;
+      color: white;
+      cursor: pointer;
+      box-shadow: var(--shadow);
     }
+
+    .btn-green { background: linear-gradient(135deg, var(--teal), #57d6a0); }
+    .btn-red { background: linear-gradient(135deg, var(--red), var(--red-dark)); }
+    .btn-blue { background: linear-gradient(135deg, var(--blue), var(--blue-dark)); }
+
     .schedule-box {
       display: flex;
       justify-content: space-between;
-      align-items: center;
       gap: 10px;
-      margin-top: 10px;
       padding: 10px 12px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
+      margin-top: 8px;
     }
+
     .schedule-title {
-      color: #a7f3d0;
-      font-size: 0.74rem;
+      color: var(--muted);
+      font-size: 0.68rem;
+      text-transform: uppercase;
       font-weight: 700;
       margin-bottom: 3px;
     }
+
     .schedule-value {
-      color: #f0fdf4;
-      font-size: 0.95rem;
       font-weight: 900;
+      color: var(--text);
+      font-size: 1.05rem;
     }
+
     .date-chip-wrap {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       margin-top: 8px;
     }
+
     .date-chip {
-      border: 1px solid rgba(74,222,128,0.18);
-      background: rgba(255,255,255,0.04);
-      color: #d1fae5;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.72);
+      color: var(--text);
       border-radius: 999px;
-      padding: 8px 10px;
-      font-size: 0.8rem;
+      padding: 10px 14px;
+      font-size: 0.9rem;
       font-weight: 700;
       cursor: pointer;
     }
+
     .date-chip.active {
-      background: linear-gradient(135deg, #166534, #22c55e);
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
       color: white;
+      border-color: transparent;
     }
+
     .table-wrap {
       overflow-x: auto;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.55);
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.75rem;
-      color: #ecfdf5;
+      font-size: 0.76rem;
+      color: var(--text);
     }
+
     th, td {
-      padding: 7px 7px;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
+      padding: 8px 7px;
+      border-bottom: 1px solid rgba(185,223,223,0.8);
       text-align: left;
       white-space: nowrap;
     }
+
     th {
-      color: #a7f3d0;
-      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      background: rgba(255,255,255,0.6);
+      font-weight: 800;
     }
-    .filter-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+
+    .chart-wrap {
+      height: 260px;
+      position: relative;
     }
+
     canvas {
       width: 100% !important;
-      height: 240px !important;
+      height: 260px !important;
+      display: block;
     }
+
+    .download-btn {
+      width: 100%;
+      margin-top: 8px;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+    }
+
     .bottom-nav {
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
       bottom: 0;
       width: min(430px, 100%);
-      background: rgba(8,17,11,0.96);
-      border-top: 1px solid rgba(74,222,128,0.12);
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      padding: 10px 10px 16px;
       gap: 8px;
-      backdrop-filter: blur(10px);
+      padding: 10px 8px 12px;
+      background: rgba(223,241,241,0.96);
+      border-top: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+      z-index: 60;
     }
+
     .nav-btn {
-      border: none;
+      border: 1px solid var(--line);
       border-radius: 14px;
       padding: 11px 8px;
-      background: rgba(255,255,255,0.05);
-      color: #d1fae5;
+      background: rgba(255,255,255,0.7);
+      color: var(--text);
       font-weight: 800;
       cursor: pointer;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
     }
+
     .nav-btn.active {
-      background: linear-gradient(135deg, #166534, #22c55e);
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
       color: white;
+      border-color: transparent;
+    }
+
+    .ok { color: #14b86a; }
+    .warn { color: #d18b11; }
+    .bad { color: #ef6f6f; }
+
+    @media (max-width: 360px) {
+      .metric-grid-2,
+      .metric-grid-4,
+      .field-grid,
+      .button-row,
+      .analytics-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -863,286 +450,215 @@
   <div class="app-shell">
     <div class="topbar">
       <div class="brand-wrap">
-        <div class="brand-logo">
-          <svg viewBox="0 0 100 100" width="50" height="50" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="ringG" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#7CFC4A"/>
-                <stop offset="100%" stop-color="#22D3EE"/>
-              </linearGradient>
-              <linearGradient id="dropG" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#67E8F9"/>
-                <stop offset="100%" stop-color="#0EA5E9"/>
-              </linearGradient>
-              <linearGradient id="fieldG" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#84CC16"/>
-                <stop offset="100%" stop-color="#16A34A"/>
-              </linearGradient>
-            </defs>
-            <circle cx="50" cy="50" r="45" fill="#0B1A10" stroke="url(#ringG)" stroke-width="5"/>
-            <path d="M20 58 C34 48, 46 49, 60 58" stroke="#65A30D" stroke-width="5" fill="none" stroke-linecap="round"/>
-            <path d="M18 68 C35 58, 48 60, 64 68" stroke="#65A30D" stroke-width="5" fill="none" stroke-linecap="round"/>
-            <path d="M49 25 C44 17, 33 17, 30 25 C38 26, 44 31, 49 38 C54 31, 60 26, 68 25 C65 17, 54 17, 49 25Z" fill="url(#fieldG)"/>
-            <path d="M50 37 C41 49, 36 56, 36 66 C36 76, 42 84, 50 84 C58 84, 64 76, 64 66 C64 56, 59 49, 50 37Z" fill="url(#dropG)" stroke="#E0F2FE" stroke-width="2"/>
-            <path d="M46 55 C42 60, 41 63, 41 67 C41 71, 43 74, 46 76" stroke="#E0F2FE" stroke-width="3" fill="none" stroke-linecap="round"/>
-          </svg>
-        </div>
+        <div class="brand-logo">💧</div>
         <div class="brand-text">
           <h1>ET Squad</h1>
           <p>Smart irrigation dashboard for tomato water management</p>
         </div>
       </div>
       <div class="status-stack">
-        <div class="pill" id="clock">00:00:00</div>
-        <div class="pill status" id="connectionText">No Data</div>
+        <div class="clock-pill" id="clockText">2:22:11 AM</div>
+        <div class="status-pill" id="dataStatus">No Data</div>
       </div>
     </div>
 
     <div class="content">
-      <section id="homePage" class="page active">
+      <section id="page-home" class="page active">
         <div class="section">
           <div class="card">
-            <div class="hero-date" id="heroDate">Today is Friday, April 10, 2026.</div>
-            <div class="hero-title">Smart watering, stronger harvest.</div>
-            <div class="hero-tagline">Healthy water, healthy tomatoes.</div>
-            <div class="small-note" id="dataNote">Waiting for your CSV data upload.</div>
-          </div>
-
-          <div class="card">
-            <h3>🌦 Current Weather Conditions</h3>
-            <div class="metric-grid-4">
+            <h3>🌤️ Current Weather Conditions</h3>
+            <div class="metric-grid-2">
               <div class="weather-card">
-                <svg class="weather-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="26" y="8" width="12" height="34" rx="6" fill="#E5E7EB" stroke="#94A3B8" stroke-width="2"/>
-                  <circle cx="32" cy="49" r="10" fill="#EF4444"/>
-                  <rect x="29" y="16" width="6" height="26" rx="3" fill="#F87171"/>
-                </svg>
+                <div class="weather-icon">🌡️</div>
                 <div>
                   <div class="weather-title">Air Temperature</div>
-                  <div class="weather-value" id="airTempHome">--</div>
+                  <div class="weather-value" id="tempValue">31.2 °C</div>
                 </div>
               </div>
-
               <div class="weather-card">
-                <svg class="weather-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M32 10 C24 22, 18 30, 18 39 C18 49, 24 56, 32 56 C40 56, 46 49, 46 39 C46 30, 40 22, 32 10Z" fill="#38BDF8"/>
-                  <path d="M28 28 C24 33, 23 36, 23 40 C23 44, 25 47, 28 49" stroke="#E0F2FE" stroke-width="3" fill="none" stroke-linecap="round"/>
-                </svg>
+                <div class="weather-icon">💧</div>
                 <div>
                   <div class="weather-title">Relative Humidity</div>
-                  <div class="weather-value" id="humidityHome">--</div>
+                  <div class="weather-value" id="rhValue">68 %</div>
                 </div>
               </div>
-
               <div class="weather-card">
-                <svg class="weather-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="32" cy="32" r="11" fill="#FACC15"/>
-                  <g stroke="#F59E0B" stroke-width="4" stroke-linecap="round">
-                    <line x1="32" y1="7" x2="32" y2="16"/>
-                    <line x1="32" y1="48" x2="32" y2="57"/>
-                    <line x1="7" y1="32" x2="16" y2="32"/>
-                    <line x1="48" y1="32" x2="57" y2="32"/>
-                    <line x1="14" y1="14" x2="20" y2="20"/>
-                    <line x1="44" y1="44" x2="50" y2="50"/>
-                    <line x1="14" y1="50" x2="20" y2="44"/>
-                    <line x1="44" y1="20" x2="50" y2="14"/>
-                  </g>
-                </svg>
+                <div class="weather-icon">☀️</div>
                 <div>
                   <div class="weather-title">Solar Radiation</div>
-                  <div class="weather-value" id="solarHome">--</div>
+                  <div class="weather-value" id="solarValue">18.5 MJ/m²</div>
                 </div>
               </div>
-
               <div class="weather-card">
-                <svg class="weather-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M11 24 C18 18, 27 18, 35 24 C42 29, 49 29, 55 24" stroke="#4ADE80" stroke-width="5" fill="none" stroke-linecap="round"/>
-                  <path d="M9 34 C18 28, 30 28, 39 34 C45 38, 51 38, 56 34" stroke="#22C55E" stroke-width="5" fill="none" stroke-linecap="round"/>
-                  <path d="M15 45 C23 40, 31 40, 39 45" stroke="#16A34A" stroke-width="5" fill="none" stroke-linecap="round"/>
-                </svg>
+                <div class="weather-icon">🌀</div>
                 <div>
                   <div class="weather-title">Wind Speed</div>
-                  <div class="weather-value" id="windHome">--</div>
+                  <div class="weather-value" id="windValue">1.9 m/s</div>
                 </div>
               </div>
             </div>
           </div>
 
           <div class="card">
-            <h3>🌱 Soil Moisture Status</h3>
-            <div class="soil-wrap">
-              <div class="soil-gauge" id="soilGauge">
-                <div class="soil-gauge-inner">
-                  <svg class="soil-gauge-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                      <linearGradient id="cropField" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stop-color="#84CC16"/>
-                        <stop offset="100%" stop-color="#16A34A"/>
-                      </linearGradient>
-                      <linearGradient id="cropDrop" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#67E8F9"/>
-                        <stop offset="100%" stop-color="#0EA5E9"/>
-                      </linearGradient>
-                    </defs>
-                    <path d="M18 58 C34 48, 46 49, 60 58" stroke="#65A30D" stroke-width="5" fill="none" stroke-linecap="round"/>
-                    <path d="M16 68 C35 58, 48 60, 66 68" stroke="#65A30D" stroke-width="5" fill="none" stroke-linecap="round"/>
-                    <path d="M49 20 C44 12, 34 12, 30 20 C38 21, 44 27, 49 34 C54 27, 60 21, 68 20 C64 12, 54 12, 49 20Z" fill="url(#cropField)"/>
-                    <path d="M50 34 C41 46, 36 53, 36 63 C36 73, 42 81, 50 81 C58 81, 64 73, 64 63 C64 53, 59 46, 50 34Z" fill="url(#cropDrop)" stroke="#E0F2FE" stroke-width="2"/>
-                  </svg>
-                  <div class="soil-value" id="soilValue">--</div>
-                  <div class="soil-label">Soil Moisture</div>
+            <h3>🪴 Soil Moisture Status</h3>
+            <div class="gauge-wrap">
+              <div class="soil-ring">
+                <div>
+                  <div class="soil-icon">🌱💧</div>
+                  <div class="metric-value" id="soilValue">34 %</div>
+                  <div class="soil-ring-label">Soil Moisture</div>
                 </div>
               </div>
-              <div class="soil-state" id="soilState">No data yet</div>
-              <div class="small-note" id="soilNote">Update your CSV to display the latest soil moisture reading.</div>
+              <div class="metric-value" style="font-size:1.02rem;" id="soilStatusText">Below target</div>
+              <div class="small-note">Update your CSV to display the latest soil moisture reading.</div>
             </div>
           </div>
 
           <div class="card">
-            <h3>🚰 Irrigation Control</h3>
-            <div class="control-value" id="pumpStatus">Stopped</div>
+            <h3>☑️ Irrigation Control</h3>
+            <div class="control-value" id="pumpState">Stopped</div>
             <div class="button-row">
-              <button class="btn btn-green" onclick="startPump()">Start</button>
-              <button class="btn btn-red" onclick="stopPump()">Stop</button>
+              <button class="btn btn-green" id="startBtn">Start</button>
+              <button class="btn btn-red" id="stopBtn">Stop</button>
             </div>
-            <div class="button-row-1">
-              <button class="btn btn-blue" id="rainButton" onclick="toggleRainShutoff()">Rain Shut Off: OFF</button>
+            <div class="button-row-1" style="margin-top:8px;">
+              <button class="btn btn-blue" id="rainBtn">Rain Shut Off: OFF</button>
             </div>
             <div class="schedule-box">
               <div>
                 <div class="schedule-title">Next Watering</div>
-                <div class="schedule-value" id="nextWateringValue">No date selected</div>
+                <div class="schedule-value" id="nextWatering">April 14, 2026</div>
               </div>
-              <div class="small-note" id="nextWateringNote">Choose irrigation dates below</div>
+              <div style="text-align:right;">
+                <div class="schedule-title">Schedule</div>
+                <div class="small-note" id="selectedScheduleNote">Selected irrigation date</div>
+              </div>
             </div>
           </div>
 
           <div class="metric-grid-2">
             <div class="metric-box">
               <div class="metric-label">Field Area</div>
-              <div class="metric-value" id="areaHome">100 m²</div>
+              <div class="metric-value" id="fieldAreaCard">100 m²</div>
               <div class="metric-sub">Used for water volume conversion</div>
             </div>
             <div class="metric-box">
               <div class="metric-label">Recommended Volume</div>
-              <div class="metric-value" id="volumeHome">--</div>
-              <div class="metric-sub">Will update after CSV upload</div>
+              <div class="metric-value" id="recommendedVolumeCard">504 L</div>
+              <div class="metric-sub">Based on modeled irrigation</div>
             </div>
-          </div>
-
-          <div class="metric-grid-2">
             <div class="metric-box">
-              <div class="metric-label">Observed Irrigation</div>
-              <div class="metric-value" id="observedHome">4.20 mm</div>
-              <div class="metric-sub">Recorded field application</div>
+              <div class="metric-label">Estimated Applied Irrigation</div>
+              <div class="metric-value" id="appliedIrrigationCard">0.60 mm</div>
+              <div class="metric-sub">Pump flow rate × runtime</div>
             </div>
             <div class="metric-box">
               <div class="metric-label">Growth Stage</div>
-              <div class="metric-value" id="stageHome">Initial</div>
+              <div class="metric-value" id="growthStageCard">Initial</div>
               <div class="metric-sub">Tomato crop stage</div>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="settingsPage" class="page">
+      <section id="page-settings" class="page">
         <div class="section">
           <div class="card">
-            <h3>⚙ Irrigation Settings</h3>
+            <h3>⚙️ Irrigation Settings</h3>
             <div class="field-grid">
               <div class="field">
-                <label for="controlMode">Control Mode</label>
-                <select id="controlMode" onchange="applySettings()">
-                  <option value="auto">Auto Irrigate</option>
-                  <option value="manual">Manual Irrigate</option>
+                <label>Control Mode</label>
+                <select id="controlMode">
+                  <option selected>Auto Irrigate</option>
+                  <option>Manual</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Crop Type</label>
+                <select id="cropType">
+                  <option selected>Tomato</option>
+                  <option>Rice</option>
+                  <option>Maize</option>
                 </select>
               </div>
 
               <div class="field">
-                <label for="cropSelect">Crop Type</label>
-                <select id="cropSelect" onchange="applySettings()">
-                  <option value="tomato" selected>Tomato</option>
+                <label>Growth Stage</label>
+                <select id="growthStage">
+                  <option value="0.80" selected>Initial</option>
+                  <option value="1.15">Mid</option>
+                  <option value="0.80">Late</option>
                 </select>
               </div>
-
               <div class="field">
-                <label for="growthStage">Growth Stage</label>
-                <select id="growthStage" onchange="applySettings()">
-                  <option value="initial" selected>Initial</option>
-                  <option value="mid">Mid-season</option>
-                  <option value="late">Late-season</option>
-                </select>
+                <label>Crop Coefficient (Kc)</label>
+                <input id="kcInput" type="number" step="0.01" value="0.80" />
               </div>
 
               <div class="field">
-                <label for="kcValue">Crop Coefficient (Kc)</label>
-                <input id="kcValue" type="number" step="0.01" value="0.80" onchange="applySettings()" />
+                <label>Target Soil Moisture (%)</label>
+                <input id="targetSoil" type="number" step="1" value="40" />
+              </div>
+              <div class="field">
+                <label>Field Area (m²)</label>
+                <input id="fieldArea" type="number" step="1" value="100" />
               </div>
 
               <div class="field">
-                <label for="desiredMoisture">Target Soil Moisture (%)</label>
-                <input id="desiredMoisture" type="number" min="0" max="100" value="40" onchange="applySettings()" />
+                <label>Start Time</label>
+                <input id="startTime" type="time" value="06:00" />
+              </div>
+              <div class="field">
+                <label>Run Time (min)</label>
+                <input id="runTime" type="number" step="1" value="30" />
               </div>
 
               <div class="field">
-                <label for="fieldArea">Field Area (m²)</label>
-                <input id="fieldArea" type="number" min="1" value="100" onchange="applySettings()" />
+                <label>Cycle Time (min)</label>
+                <input id="cycleTime" type="number" step="1" value="10" />
+              </div>
+              <div class="field">
+                <label>Soak Time (min)</label>
+                <input id="soakTime" type="number" step="1" value="20" />
               </div>
 
-              <div class="field">
-                <label for="actualDepthInput">Observed Irrigation (mm)</label>
-                <input id="actualDepthInput" type="number" min="0" step="0.1" value="4.2" onchange="applySettings()" />
-              </div>
-
-              <div class="field">
-                <label for="startTime">Start Time</label>
-                <input id="startTime" type="time" value="06:00" onchange="applySettings()" />
-              </div>
-
-              <div class="field">
-                <label for="runTime">Run Time (min)</label>
-                <input id="runTime" type="number" min="1" value="30" onchange="applySettings()" />
-              </div>
-
-              <div class="field">
-                <label for="cycleTime">Cycle Time (min)</label>
-                <input id="cycleTime" type="number" min="1" value="10" onchange="applySettings()" />
-              </div>
-
-              <div class="field">
-                <label for="soakTime">Soak Time (min)</label>
-                <input id="soakTime" type="number" min="1" value="20" onchange="applySettings()" />
+              <div class="field full">
+                <label>Pump Flow Rate (L/min)</label>
+                <input id="pumpFlowRate" type="number" step="0.1" value="2.0" />
               </div>
             </div>
-            <div class="small-note">Tomato stage-based Kc: Initial = 0.80, Mid = 1.15, Late = 0.80.</div>
+            <div class="small-note" style="margin-top:10px;">
+              Manual observed irrigation input was removed. Irrigation applied is now estimated automatically from pump flow rate and run time.
+            </div>
           </div>
 
           <div class="card">
-            <h3>📅 Irrigation Dates</h3>
+            <h3>🗓️ Irrigation Dates</h3>
             <div class="small-note">Select one or more dates for irrigation scheduling.</div>
-            <div class="date-chip-wrap" id="dateChipWrap"></div>
+            <div class="date-chip-wrap" id="dateChips"></div>
           </div>
         </div>
       </section>
 
-      <section id="analyticsPage" class="page">
+      <section id="page-analytics" class="page">
         <div class="section">
           <div class="card">
             <h3>📊 Analytics Filters</h3>
-            <div class="filter-row">
+            <div class="analytics-grid">
               <div class="field">
-                <label for="reportRange">Report Range</label>
-                <select id="reportRange" onchange="refreshAnalyticsOnly()">
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="whole" selected>Whole Cropping Duration</option>
+                <label>Report Range</label>
+                <select>
+                  <option selected>Whole Cropping Duration</option>
+                  <option>Daily</option>
+                  <option>Weekly</option>
                 </select>
               </div>
               <div class="field">
-                <label for="reportMetric">Display</label>
-                <select id="reportMetric" onchange="refreshAnalyticsOnly()">
-                  <option value="all" selected>All Daily Data</option>
-                  <option value="recent">Most Recent Only</option>
+                <label>Display</label>
+                <select>
+                  <option selected>All Daily Data</option>
+                  <option>Only ET</option>
+                  <option>Only Irrigation</option>
                 </select>
               </div>
             </div>
@@ -1151,51 +667,48 @@
           <div class="metric-grid-2">
             <div class="metric-box">
               <div class="metric-label">Daily ETo</div>
-              <div class="metric-value" id="analyticsETo">--</div>
+              <div class="metric-value" id="dailyEtoCard">4.80 mm/day</div>
               <div class="metric-sub">Reference evapotranspiration</div>
             </div>
             <div class="metric-box">
               <div class="metric-label">Daily ETc</div>
-              <div class="metric-value" id="analyticsETc">--</div>
+              <div class="metric-value" id="dailyEtcCard">3.84 mm/day</div>
               <div class="metric-sub">Tomato crop demand</div>
             </div>
-          </div>
-
-          <div class="metric-grid-2">
             <div class="metric-box">
               <div class="metric-label">Modeled Irrigation</div>
-              <div class="metric-value" id="analyticsModeled">--</div>
+              <div class="metric-value" id="modeledIrrigationCard">3.84 mm</div>
               <div class="metric-sub">System recommendation</div>
             </div>
             <div class="metric-box">
-              <div class="metric-label">Observed Irrigation</div>
-              <div class="metric-value" id="analyticsActual">4.20 mm</div>
-              <div class="metric-sub">Manually entered value</div>
+              <div class="metric-label">Estimated Applied Irrigation</div>
+              <div class="metric-value" id="observedCard">0.60 mm</div>
+              <div class="metric-sub">Runtime-based estimated value</div>
             </div>
           </div>
 
           <div class="card">
-            <h3>📈 Soil Moisture Monitoring</h3>
-            <canvas id="soilChart"></canvas>
+            <h3>📉 Soil Moisture Monitoring</h3>
+            <div class="chart-wrap"><canvas id="soilChart"></canvas></div>
           </div>
 
           <div class="card">
-            <h3>🌧 Rainfall vs Irrigation</h3>
-            <canvas id="rainIrrChart"></canvas>
+            <h3>☁️ Rainfall vs Irrigation</h3>
+            <div class="chart-wrap"><canvas id="rainChart"></canvas></div>
           </div>
 
           <div class="card">
             <h3>📁 Water Budget Export</h3>
-            <div class="button-row-1">
-              <button class="btn btn-gold" onclick="downloadWaterBudgetCSV()">Download Water Budget CSV</button>
+            <button class="btn download-btn" id="downloadCsvBtn">Download Water Budget CSV</button>
+            <div class="small-note" style="margin-top:8px;">
+              Daily report includes date, ETo, ETc, rainfall, soil moisture, modeled irrigation, estimated irrigation, field area, and water volume.
             </div>
-            <div class="small-note">Daily report includes date, ETo, ETc, rainfall, soil moisture, modeled irrigation, observed irrigation, field area, and water volume.</div>
           </div>
 
           <div class="card">
-            <h3>📋 Daily Water Budget Table</h3>
+            <h3>🧾 Daily Water Budget Table</h3>
             <div class="table-wrap">
-              <table id="budgetTable">
+              <table>
                 <thead>
                   <tr>
                     <th>Date</th>
@@ -1204,7 +717,7 @@
                     <th>Rain</th>
                     <th>Soil</th>
                     <th>Modeled</th>
-                    <th>Observed</th>
+                    <th>Estimated</th>
                     <th>Volume (L)</th>
                   </tr>
                 </thead>
@@ -1216,522 +729,385 @@
       </section>
     </div>
 
-    <div class="bottom-nav">
-      <button id="nav-home" class="nav-btn active" onclick="showPage('home')">🏠 Home</button>
-      <button id="nav-settings" class="nav-btn" onclick="showPage('settings')">⚙ Settings</button>
-      <button id="nav-analytics" class="nav-btn" onclick="showPage('analytics')">📊 Analytics</button>
-    </div>
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-page="home">🏠 Home</button>
+      <button class="nav-btn" data-page="settings">⚙️ Settings</button>
+      <button class="nav-btn" data-page="analytics">📊 Analytics</button>
+    </nav>
   </div>
 
   <script>
-    const csvUrl = "";
+    const sampleData = [
+      { date: '2026-04-13', temp: 30.5, rh: 71, solar: 17.3, wind: 1.7, rainfall: 0.0, eto: 4.5, soil: 35 },
+      { date: '2026-04-14', temp: 31.2, rh: 68, solar: 18.5, wind: 1.9, rainfall: 0.0, eto: 4.8, soil: 34 },
+      { date: '2026-04-15', temp: 30.8, rh: 70, solar: 17.9, wind: 2.1, rainfall: 2.0, eto: 4.6, soil: 36 },
+      { date: '2026-04-16', temp: 32.1, rh: 66, solar: 19.2, wind: 2.3, rainfall: 0.0, eto: 5.0, soil: 33 },
+      { date: '2026-04-17', temp: 31.5, rh: 69, solar: 18.0, wind: 2.0, rainfall: 1.0, eto: 4.7, soil: 37 }
+    ];
 
-    let rainShutoff = false;
-    let fullBudgetRows = [];
-    let filteredBudgetRows = [];
-    let soilChart;
-    let rainIrrChart;
-    let availableDateKeys = [];
-    let selectedScheduleDates = new Set();
+    let selectedIndex = 1;
+    let pumpRunning = false;
+    let rainShutOff = false;
 
-    const cropStageKc = {
-      tomato: {
-        initial: 0.80,
-        mid: 1.15,
-        late: 0.80
-      }
-    };
-
-    function showPage(page) {
-      document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-      document.getElementById(page + 'Page').classList.add('active');
-      document.getElementById('nav-' + page).classList.add('active');
-      if (page === 'analytics') refreshAnalyticsOnly();
-    }
+    const $ = (id) => document.getElementById(id);
 
     function updateClock() {
-      document.getElementById('clock').textContent = new Date().toLocaleTimeString();
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    function startPump() {
-      const el = document.getElementById('pumpStatus');
-      el.textContent = 'Running';
-      el.style.color = '#4ade80';
+      const now = new Date();
+      $('clockText').textContent = now.toLocaleTimeString('en-US');
     }
 
-    function stopPump() {
-      const el = document.getElementById('pumpStatus');
-      el.textContent = 'Stopped';
-      el.style.color = '#f87171';
+    function getSettings() {
+      return {
+        kc: parseFloat($('kcInput').value) || 0.8,
+        targetSoil: parseFloat($('targetSoil').value) || 40,
+        fieldArea: parseFloat($('fieldArea').value) || 100,
+        runTime: parseFloat($('runTime').value) || 30,
+        cycleTime: parseFloat($('cycleTime').value) || 10,
+        soakTime: parseFloat($('soakTime').value) || 20,
+        pumpFlowRate: parseFloat($('pumpFlowRate').value) || 2.0,
+        startTime: $('startTime').value || '06:00',
+        growthStage: $('growthStage').options[$('growthStage').selectedIndex].text
+      };
     }
 
-    function toggleRainShutoff() {
-      rainShutoff = !rainShutoff;
-      const btn = document.getElementById('rainButton');
-      btn.textContent = `Rain Shut Off: ${rainShutoff ? 'ON' : 'OFF'}`;
-      btn.style.background = rainShutoff
-        ? 'linear-gradient(135deg,#f59e0b,#b45309)'
-        : 'linear-gradient(135deg,#60a5fa,#1d4ed8)';
-      loadData();
+    function calcForRecord(record) {
+      const s = getSettings();
+      const etc = record.eto * s.kc;
+      const modeledMm = Math.max(etc - record.rainfall, 0);
+      const appliedLiters = s.pumpFlowRate * s.runTime;
+      const appliedMm = s.fieldArea > 0 ? appliedLiters / s.fieldArea : 0;
+      const modeledLiters = modeledMm * s.fieldArea;
+      const soilCurrent = pumpRunning ? Math.min(s.targetSoil + 2, 46) : record.soil;
+      return { ...s, etc, modeledMm, modeledLiters, appliedLiters, appliedMm, soilCurrent };
     }
 
-    function applySettings() {
-      const crop = document.getElementById('cropSelect').value;
-      const stage = document.getElementById('growthStage').value;
-      const kcInput = document.getElementById('kcValue');
-      if (cropStageKc[crop] && cropStageKc[crop][stage] !== undefined) {
-        if (document.activeElement !== kcInput) {
-          kcInput.value = cropStageKc[crop][stage].toFixed(2);
-        }
-      }
-      document.getElementById('observedHome').textContent = `${(parseFloat(document.getElementById('actualDepthInput').value) || 0).toFixed(2)} mm`;
-      document.getElementById('stageHome').textContent = stage.charAt(0).toUpperCase() + stage.slice(1);
-      document.getElementById('areaHome').textContent = `${(parseFloat(document.getElementById('fieldArea').value) || 0).toFixed(0)} m²`;
-      loadData();
-    }
-
-    function parseCSV(text) {
-      const rows = text.trim().split('\n').map(r => r.replace(/\r/g, '').split(','));
-      const headers = rows[0].map(h => h.trim().toLowerCase());
-
-      return rows.slice(1).map(row => {
-        const item = {};
-        headers.forEach((h, i) => item[h] = row[i] ? row[i].trim() : '');
-        return {
-          time: item.time || item.datetime || item.timestamp || item.date || '',
-          temp: parseFloat(item.temp || item.temperature || item['air temperature'] || 0),
-          humidity: parseFloat(item.humidity || item['relative humidity'] || 0),
-          solar: parseFloat(item.solar || item.solar_radiation || item['solar radiation'] || item.light || 0),
-          wind: parseFloat(item.wind || item['wind speed'] || item.windspeed || 0),
-          rainfall: parseFloat(item.rainfall || item.rain || 0),
-          soil: parseFloat(item.soil || item.soil_moisture || item['soil moisture'] || 0),
-          pressure: 101.1
-        };
-      }).filter(d =>
-        !Number.isNaN(d.temp) &&
-        !Number.isNaN(d.humidity) &&
-        !Number.isNaN(d.solar) &&
-        !Number.isNaN(d.wind)
-      );
-    }
-
-    function computeDailySolarMJ(solarArray) {
-      return solarArray.reduce((sum, w) => sum + (w * 3600 / 1000000), 0);
-    }
-
-    function saturationVaporPressure(T) {
-      return 0.6108 * Math.exp((17.27 * T) / (T + 237.3));
-    }
-
-    function slopeVaporPressureCurve(T) {
-      const es = saturationVaporPressure(T);
-      return (4098 * es) / Math.pow(T + 237.3, 2);
-    }
-
-    function psychrometricConstant(pressureKPa = 101.1) {
-      return 0.000665 * pressureKPa;
-    }
-
-    function computePenmanMonteithET0({ tMean, tMax, tMin, rhMean, u2, pressure, rn }) {
-      const delta = slopeVaporPressureCurve(tMean);
-      const gamma = psychrometricConstant(pressure);
-      const esTmax = saturationVaporPressure(tMax);
-      const esTmin = saturationVaporPressure(tMin);
-      const es = (esTmax + esTmin) / 2;
-      const ea = (rhMean / 100) * es;
-      const numerator = 0.408 * delta * rn + gamma * (900 / (tMean + 273)) * u2 * (es - ea);
-      const denominator = delta + gamma * (1 + 0.34 * u2);
-      return Math.max(numerator / denominator, 0);
-    }
-
-    function computeIrrigationRecommendation({ etc, rainfall, soilMoisture, targetMoisture, efficiency = 0.85 }) {
-      let netRequirement = Math.max(etc - rainfall, 0);
-      if (soilMoisture >= targetMoisture) netRequirement = 0;
-      const grossRequirement = netRequirement > 0 ? netRequirement / efficiency : 0;
-      return { netRequirement, grossRequirement };
-    }
-
-    function formatDisplayDate(dateStr) {
-      const d = new Date(dateStr);
-      if (isNaN(d)) return dateStr;
-      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    }
-
-    function formatLongDate(dateObj) {
-      return dateObj.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    }
-
-    function buildFallbackDates() {
-      const today = new Date();
-      availableDateKeys = [];
-      for (let i = 0; i < 10; i++) {
-        const d = new Date(today);
-        d.setDate(today.getDate() + i);
-        availableDateKeys.push(d.toISOString().slice(0, 10));
-      }
-      if (selectedScheduleDates.size === 0) {
-        availableDateKeys.slice(0, 3).forEach(d => selectedScheduleDates.add(d));
-      }
-      buildScheduleChips(availableDateKeys);
-      updateNextWateringOnly();
-    }
-
-    function buildScheduleChips(keys) {
-      const wrap = document.getElementById('dateChipWrap');
+    function renderDateChips() {
+      const wrap = $('dateChips');
       wrap.innerHTML = '';
-      keys.forEach(key => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'date-chip' + (selectedScheduleDates.has(key) ? ' active' : '');
-        btn.textContent = formatDisplayDate(key);
-        btn.onclick = () => {
-          if (selectedScheduleDates.has(key)) selectedScheduleDates.delete(key);
-          else selectedScheduleDates.add(key);
-          buildScheduleChips(keys);
-          updateNextWateringOnly();
+      sampleData.forEach((item, index) => {
+        const d = new Date(item.date);
+        const chip = document.createElement('button');
+        chip.className = 'date-chip' + (index === selectedIndex ? ' active' : '');
+        chip.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        chip.onclick = () => {
+          selectedIndex = index;
+          renderAll();
         };
-        wrap.appendChild(btn);
+        wrap.appendChild(chip);
       });
     }
 
-    function getNextWateringDate() {
-      const today = new Date();
-      const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const upcoming = [...selectedScheduleDates]
-        .map(d => new Date(d))
-        .sort((a, b) => a - b)
-        .find(d => d >= todayOnly);
-      return upcoming || null;
+    function renderHome() {
+      const record = sampleData[selectedIndex];
+      const c = calcForRecord(record);
+
+      $('tempValue').textContent = `${record.temp.toFixed(1)} °C`;
+      $('rhValue').textContent = `${record.rh.toFixed(0)} %`;
+      $('solarValue').textContent = `${record.solar.toFixed(1)} MJ/m²`;
+      $('windValue').textContent = `${record.wind.toFixed(1)} m/s`;
+
+      $('soilValue').textContent = `${c.soilCurrent.toFixed(0)} %`;
+      $('soilStatusText').textContent = c.soilCurrent >= c.targetSoil ? 'At or above target' : 'No data yet';
+
+      $('pumpState').textContent = rainShutOff ? 'Rain Shutoff Active' : (pumpRunning ? 'Running' : 'Stopped');
+      $('pumpState').className = 'control-value ' + (rainShutOff ? 'warn' : (pumpRunning ? 'ok' : ''));
+      $('rainBtn').textContent = `Rain Shut Off: ${rainShutOff ? 'ON' : 'OFF'}`;
+
+      $('fieldAreaCard').textContent = `${c.fieldArea.toFixed(0)} m²`;
+      $('recommendedVolumeCard').textContent = `${c.modeledLiters.toFixed(0)} L`;
+      $('appliedIrrigationCard').textContent = `${c.appliedMm.toFixed(2)} mm`;
+      $('growthStageCard').textContent = c.growthStage;
+      $('nextWatering').textContent = new Date(record.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     }
 
-    function updateNextWateringOnly() {
-      const nextDate = getNextWateringDate();
-      document.getElementById('nextWateringValue').textContent = nextDate
-        ? nextDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-        : 'No date selected';
-      document.getElementById('nextWateringNote').textContent = nextDate ? 'Selected irrigation date' : 'Please choose schedule dates';
+    function renderAnalyticsCards() {
+      const record = sampleData[selectedIndex];
+      const c = calcForRecord(record);
+
+      $('dailyEtoCard').textContent = `${record.eto.toFixed(2)} mm/day`;
+      $('dailyEtcCard').textContent = `${c.etc.toFixed(2)} mm/day`;
+      $('modeledIrrigationCard').textContent = `${c.modeledMm.toFixed(2)} mm`;
+      $('observedCard').textContent = `${c.appliedMm.toFixed(2)} mm`;
+      $('dataStatus').textContent = 'Live Demo';
     }
 
-    function updateSoilGauge(percent) {
-      const gauge = document.getElementById('soilGauge');
-      const p = Math.max(0, Math.min(100, percent));
-      gauge.style.background = `conic-gradient(#22c55e ${p * 3.6}deg, rgba(255,255,255,0.08) 0deg)`;
+function drawAxes(ctx, w, h, left, top, right, bottom) {
+  ctx.strokeStyle = '#bfdede';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(left, top);
+  ctx.lineTo(left, h - bottom);
+  ctx.lineTo(w - right, h - bottom);
+  ctx.stroke();
     }
 
-    function getFilteredRows(rows) {
-      const range = document.getElementById('reportRange').value;
-      const metric = document.getElementById('reportMetric').value;
-      let filtered = [...rows];
-      if (range === 'weekly') filtered = filtered.slice(-7);
-      else if (range === 'monthly') filtered = filtered.slice(-30);
-      if (metric === 'recent' && filtered.length) filtered = [filtered[filtered.length - 1]];
-      return filtered;
+function drawLegend(ctx, items, x, y) {
+  ctx.font = '12px Arial';
+  items.forEach((item, i) => {
+    const yy = y + i * 20;
+    ctx.fillStyle = item.color;
+    ctx.fillRect(x, yy - 10, 26, 10);
+    ctx.fillStyle = '#4f7279';
+    ctx.fillText(item.label, x + 34, yy - 1);
+  });
     }
 
-    function renderBudgetTable(rows) {
-      const body = document.getElementById('budgetTableBody');
-      body.innerHTML = '';
-      rows.forEach(row => {
+    function drawSoilChart() {
+      const canvas = $('soilChart');
+      const ctx = canvas.getContext('2d');
+      const dpr = Math.max(window.devicePixelRatio || 1, 2);
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+
+      const w = rect.width;
+      const h = rect.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const left = 34, top = 18, right = 10, bottom = 26;
+      const plotW = w - left - right;
+      const plotH = h - top - bottom;
+      drawAxes(ctx, w, h, left, top, right, bottom);
+
+      const maxY = 50;
+      for (let i = 0; i <= 5; i++) {
+        const value = i * 10;
+        const y = h - bottom - (value / maxY) * plotH;
+        ctx.strokeStyle = '#edf7f7';
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(w - right, y);
+        ctx.stroke();
+        ctx.fillStyle = '#6f9399';
+        ctx.font = '11px Arial';
+        ctx.fillText(value.toString(), 10, y + 3);
+      }
+
+      const target = getSettings().targetSoil;
+      const stepX = plotW / (sampleData.length - 1);
+
+      ctx.strokeStyle = '#43c96a';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      sampleData.forEach((r, i) => {
+        const x = left + i * stepX;
+        const y = h - bottom - (r.soil / maxY) * plotH;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = '#f2aa3b';
+      ctx.lineWidth = 3;
+      const ty = h - bottom - (target / maxY) * plotH;
+      ctx.beginPath();
+      ctx.moveTo(left, ty);
+      ctx.lineTo(w - right, ty);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      sampleData.forEach((r, i) => {
+        const x = left + i * stepX;
+        const y = h - bottom - (r.soil / maxY) * plotH;
+        ctx.fillStyle = '#49d86d';
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#6f939';
+        ctx.font = '11px Arial';
+        ctx.textAlign = 'center';
+        const label = new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        ctx.fillText(label, x, h - 8);
+      });
+      ctx.textAlign = 'left';
+
+      drawLegend(ctx, [
+        { color: '#49d86d', label: 'Soil Moisture (%)' },
+        { color: '#f0ad4e', label: 'Target Moisture (%)' }
+      ], 42, 16);
+    }
+
+    function drawRainChart() {
+      const canvas = $('rainChart');
+      const ctx = canvas.getContext('2d');
+      const dpr = Math.max(window.devicePixelRatio || 1, 2);
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+
+      const w = rect.width;
+      const h = rect.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const left = 34, top = 28, right = 10, bottom = 28;
+      const plotW = w - left - right;
+      const plotH = h - top - bottom;
+      drawAxes(ctx, w, h, left, top, right, bottom);
+
+      const c = calcForRecord(sampleData[selectedIndex]);
+      const maxY = 5;
+      for (let i = 0; i <= 5; i++) {
+        const value = i;
+        const y = h - bottom - (value / maxY) * plotH;
+        ctx.strokeStyle = '#edf7f7';
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(w - right, y);
+        ctx.stroke();
+        ctx.fillStyle = '#6f9399';
+        ctx.font = '11px Arial';
+        ctx.fillText(value.toFixed(1), 6, y + 3);
+      }
+
+      drawLegend(ctx, [
+        { color: '#6ea8ff', label: 'Rainfall (mm)' },
+        { color: '#62d37c', label: 'Modeled Irrigation (mm)' },
+        { color: '#b8c1d0', label: 'Estimated Irrigation (mm)' }
+      ], 44, 16);
+
+      const values = [
+        sampleData[selectedIndex].rainfall,
+        c.modeledMm,
+        c.appliedMm
+      ];
+      const colors = ['#5f9dff', '#52cc6f', '#9aa7bb'];
+      const groupX = left + plotW * 0.62;
+      const barW = 46;
+      const gap = 12;
+
+      values.forEach((v, i) => {
+        const x = groupX + i * (barW + gap) - ((barW * 3 + gap * 2) / 2);
+        const barH = (Math.min(v, maxY) / maxY) * plotH;
+        const y = h - bottom - barH;
+        ctx.fillStyle = colors[i];
+        ctx.fillRect(x, y, barW, barH);
+        ctx.strokeStyle = '#ffffff';
+ctx.lineWidth = 1;
+ctx.strokeRect(x, y, barW, barH);
+      });
+
+      ctx.fillStyle = '#6f9399';
+      ctx.font = '11px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(new Date(sampleData[selectedIndex].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), groupX, h - 8);
+      ctx.textAlign = 'left';
+    }
+
+    function renderTable() {
+      const tbody = $('budgetTableBody');
+      tbody.innerHTML = '';
+      const s = getSettings();
+      sampleData.forEach((r) => {
+        const etc = r.eto * s.kc;
+        const modeledMm = Math.max(etc - r.rainfall, 0);
+        const appliedLiters = s.pumpFlowRate * s.runTime;
+        const appliedMm = s.fieldArea > 0 ? appliedLiters / s.fieldArea : 0;
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${row.date}</td>
-          <td>${row.eto}</td>
-          <td>${row.etc}</td>
-          <td>${row.rainfall}</td>
-          <td>${row.avg_soil_moisture}</td>
-          <td>${row.modeled_irrigation}</td>
-          <td>${row.actual_irrigation}</td>
-          <td>${row.modeled_volume_l}</td>
+          <td>${new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td>
+          <td>${r.eto.toFixed(2)}</td>
+          <td>${etc.toFixed(2)}</td>
+          <td>${r.rainfall.toFixed(2)}</td>
+          <td>${r.soil.toFixed(0)}%</td>
+          <td>${modeledMm.toFixed(2)}</td>
+          <td>${appliedMm.toFixed(2)}</td>
+          <td>${appliedLiters.toFixed(0)}</td>
         `;
-        body.appendChild(tr);
+        tbody.appendChild(tr);
       });
     }
 
-    function renderSoilChart(rows) {
-      const ctx = document.getElementById('soilChart');
-      if (soilChart) soilChart.destroy();
-      soilChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: rows.map(r => r.date),
-          datasets: [
-            {
-              label: 'Soil Moisture (%)',
-              data: rows.map(r => Number(r.avg_soil_moisture)),
-              borderColor: '#22c55e',
-              backgroundColor: 'rgba(34,197,94,0.18)',
-              borderWidth: 2,
-              tension: 0.3,
-              fill: true
-            },
-            {
-              label: 'Target Moisture (%)',
-              data: rows.map(() => Number(document.getElementById('desiredMoisture').value || 40)),
-              borderColor: '#f59e0b',
-              borderDash: [5, 5],
-              pointRadius: 0,
-              borderWidth: 2,
-              fill: false
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#d1fae5' } } },
-          scales: {
-            x: { ticks: { color: '#d1fae5' }, grid: { color: 'rgba(255,255,255,0.06)' } },
-            y: { beginAtZero: true, ticks: { color: '#d1fae5' }, grid: { color: 'rgba(255,255,255,0.06)' } }
-          }
-        }
+    function downloadCsv() {
+      const s = getSettings();
+      const rows = [
+        ['Date','ETo_mm','ETc_mm','Rainfall_mm','SoilMoisture_percent','ModeledIrrigation_mm','EstimatedIrrigation_mm','FieldArea_m2','Volume_L']
+      ];
+      sampleData.forEach((r) => {
+        const etc = r.eto * s.kc;
+        const modeledMm = Math.max(etc - r.rainfall, 0);
+        const volume = s.pumpFlowRate * s.runTime;
+        const appliedMm = s.fieldArea > 0 ? volume / s.fieldArea : 0;
+        rows.push([r.date, r.eto.toFixed(2), etc.toFixed(2), r.rainfall.toFixed(2), r.soil.toFixed(0), modeledMm.toFixed(2), appliedMm.toFixed(2), s.fieldArea.toFixed(0), volume.toFixed(0)]);
       });
-    }
-
-    function renderRainIrrChart(rows) {
-      const ctx = document.getElementById('rainIrrChart');
-      if (rainIrrChart) rainIrrChart.destroy();
-      rainIrrChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: rows.map(r => r.date),
-          datasets: [
-            {
-              label: 'Rainfall (mm)',
-              data: rows.map(r => Number(r.rainfall)),
-              backgroundColor: 'rgba(59,130,246,0.78)',
-              borderColor: '#3b82f6',
-              borderWidth: 1
-            },
-            {
-              label: 'Modeled Irrigation (mm)',
-              data: rows.map(r => Number(r.modeled_irrigation)),
-              backgroundColor: 'rgba(34,197,94,0.78)',
-              borderColor: '#22c55e',
-              borderWidth: 1
-            },
-            {
-              label: 'Observed Irrigation (mm)',
-              data: rows.map(r => Number(r.actual_irrigation)),
-              backgroundColor: 'rgba(148,163,184,0.78)',
-              borderColor: '#94a3b8',
-              borderWidth: 1
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#d1fae5' } } },
-          scales: {
-            x: { ticks: { color: '#d1fae5' }, grid: { color: 'rgba(255,255,255,0.06)' } },
-            y: { beginAtZero: true, ticks: { color: '#d1fae5' }, grid: { color: 'rgba(255,255,255,0.06)' } }
-          }
-        }
-      });
-    }
-
-    function refreshAnalyticsOnly() {
-      filteredBudgetRows = getFilteredRows(fullBudgetRows);
-      if (!filteredBudgetRows.length) return;
-
-      const latest = filteredBudgetRows[filteredBudgetRows.length - 1];
-      document.getElementById('analyticsETo').textContent = `${latest.eto} mm/day`;
-      document.getElementById('analyticsETc').textContent = `${latest.etc} mm/day`;
-      document.getElementById('analyticsModeled').textContent = `${latest.modeled_irrigation} mm`;
-      document.getElementById('analyticsActual').textContent = `${latest.actual_irrigation} mm`;
-
-      renderBudgetTable(filteredBudgetRows);
-      renderSoilChart(filteredBudgetRows);
-      renderRainIrrChart(filteredBudgetRows);
-    }
-
-    function downloadWaterBudgetCSV() {
-      if (!filteredBudgetRows.length) return;
-      const headers = Object.keys(filteredBudgetRows[0]);
-      const csv = [
-        headers.join(','),
-        ...filteredBudgetRows.map(row =>
-          headers.map(h => `"${String(row[h]).replace(/"/g, '""')}"`).join(',')
-        )
-      ].join('\n');
+      const csv = rows.map(r => r.join(',')).join('\n');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'daily_water_budget_data.csv';
+      a.download = 'water_budget.csv';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }
 
-    function initEmptyState() {
-      buildFallbackDates();
-      fullBudgetRows = [
-        {
-          date: formatDisplayDate(new Date().toISOString().slice(0, 10)),
-          eto: '--',
-          etc: '--',
-          rainfall: '--',
-          avg_soil_moisture: '--',
-          modeled_irrigation: '--',
-          actual_irrigation: (parseFloat(document.getElementById('actualDepthInput').value) || 0).toFixed(2),
-          modeled_volume_l: '--'
-        }
-      ];
-
-      document.getElementById('heroDate').textContent = `Today is ${formatLongDate(new Date())}.`;
-      document.getElementById('dataNote').textContent = 'CSV data source is currently blank. Update it anytime.';
-      document.getElementById('observedHome').textContent = `${(parseFloat(document.getElementById('actualDepthInput').value) || 0).toFixed(2)} mm`;
-      document.getElementById('stageHome').textContent = document.getElementById('growthStage').value.charAt(0).toUpperCase() + document.getElementById('growthStage').value.slice(1);
-      document.getElementById('areaHome').textContent = `${(parseFloat(document.getElementById('fieldArea').value) || 100).toFixed(0)} m²`;
-      document.getElementById('volumeHome').textContent = '--';
-      document.getElementById('soilValue').textContent = '--';
-      document.getElementById('soilState').textContent = 'No data yet';
-      document.getElementById('soilNote').textContent = 'Update your CSV to display the latest soil moisture reading.';
-      updateSoilGauge(0);
-
-      document.getElementById('analyticsETo').textContent = '--';
-      document.getElementById('analyticsETc').textContent = '--';
-      document.getElementById('analyticsModeled').textContent = '--';
-      document.getElementById('analyticsActual').textContent = `${(parseFloat(document.getElementById('actualDepthInput').value) || 0).toFixed(2)} mm`;
-
-      renderBudgetTable(fullBudgetRows);
-      if (soilChart) soilChart.destroy();
-      if (rainIrrChart) rainIrrChart.destroy();
+    function renderAll() {
+      updateClock();
+      renderDateChips();
+      renderHome();
+      renderAnalyticsCards();
+      renderTable();
+      drawSoilChart();
+      drawRainChart();
     }
 
-    function updateDashboard(data) {
-      const crop = document.getElementById('cropSelect').value;
-      const stage = document.getElementById('growthStage').value;
-      const kc = parseFloat(document.getElementById('kcValue').value) || cropStageKc[crop][stage] || 1.0;
-      const desiredMoisture = parseFloat(document.getElementById('desiredMoisture').value) || 40;
-      const fieldArea = parseFloat(document.getElementById('fieldArea').value) || 100;
-      const actualDepth = parseFloat(document.getElementById('actualDepthInput').value) || 4.2;
-      const efficiency = 0.85;
-      const pressure = 101.1;
-
-      const grouped = {};
-      data.forEach(row => {
-        const key = extractDateKey(row.time);
-        if (!grouped[key]) grouped[key] = [];
-        grouped[key].push(row);
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const page = btn.dataset.page;
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        $('page-' + page).classList.add('active');
+        setTimeout(() => {
+          if (page === 'analytics') {
+            drawSoilChart();
+            drawRainChart();
+          }
+        }, 50);
       });
+    });
 
-      fullBudgetRows = Object.keys(grouped).sort().map(dateKey => {
-        const rows = grouped[dateKey];
-        const temps = rows.map(r => r.temp);
-        const hums = rows.map(r => r.humidity);
-        const solarSeries = rows.map(r => r.solar);
-        const winds = rows.map(r => r.wind || 0);
-        const rains = rows.map(r => r.rainfall || 0);
+    $('growthStage').addEventListener('change', (e) => {
+      $('kcInput').value = e.target.value;
+      renderAll();
+    });
 
-        const tMax = Math.max(...temps);
-        const tMin = Math.min(...temps);
-        const tMean = temps.reduce((a, b) => a + b, 0) / temps.length;
-        const rhMean = hums.reduce((a, b) => a + b, 0) / hums.length;
-        const u2 = winds.reduce((a, b) => a + b, 0) / winds.length;
-        const rainfall = rains.reduce((a, b) => a + b, 0);
-        const rn = computeDailySolarMJ(solarSeries);
-        const eto = computePenmanMonteithET0({ tMean, tMax, tMin, rhMean, u2, pressure, rn });
-        const etc = eto * kc;
-        const avgSoil = rows.reduce((a, b) => a + (b.soil || 0), 0) / rows.length;
-        const irr = computeIrrigationRecommendation({
-          etc,
-          rainfall,
-          soilMoisture: avgSoil,
-          targetMoisture: desiredMoisture,
-          efficiency
-        });
+    ['kcInput','targetSoil','fieldArea','runTime','cycleTime','soakTime','pumpFlowRate','startTime'].forEach(id => {
+      $(id).addEventListener('input', renderAll);
+    });
 
-        return {
-          date: formatDisplayDate(dateKey),
-          date_key: dateKey,
-          eto: eto.toFixed(2),
-          etc: etc.toFixed(2),
-          rainfall: rainfall.toFixed(2),
-          avg_soil_moisture: avgSoil.toFixed(1),
-          modeled_irrigation: irr.grossRequirement.toFixed(2),
-          actual_irrigation: actualDepth.toFixed(2),
-          difference: (irr.grossRequirement - actualDepth).toFixed(2),
-          modeled_volume_l: (irr.grossRequirement * fieldArea).toFixed(0)
-        };
-      });
+    $('startBtn').addEventListener('click', () => {
+      if (!rainShutOff) pumpRunning = true;
+      renderAll();
+    });
 
-      availableDateKeys = [...new Set(data.map(d => extractDateKey(d.time)))].sort();
-      if (selectedScheduleDates.size === 0) {
-        availableDateKeys.slice(0, 3).forEach(d => selectedScheduleDates.add(d));
+    $('stopBtn').addEventListener('click', () => {
+      pumpRunning = false;
+      renderAll();
+    });
+
+    $('rainBtn').addEventListener('click', () => {
+      rainShutOff = !rainShutOff;
+      if (rainShutOff) pumpRunning = false;
+      renderAll();
+    });
+
+    $('downloadCsvBtn').addEventListener('click', downloadCsv);
+
+    setInterval(updateClock, 1000);
+    window.addEventListener('resize', () => {
+      if ($('page-analytics').classList.contains('active')) {
+        drawSoilChart();
+        drawRainChart();
       }
-      buildScheduleChips(availableDateKeys.slice(-12));
-      updateNextWateringOnly();
+    });
 
-      const latest = data[data.length - 1];
-      const latestDay = fullBudgetRows[fullBudgetRows.length - 1];
-      const currentSoil = Math.max(0, Math.min(100, latest.soil || 0));
-      const recommendedDepth = parseFloat(latestDay.modeled_irrigation);
-      const recommendedVolume = parseFloat(latestDay.modeled_volume_l);
-      const rainfall = parseFloat(latestDay.rainfall);
-
-      document.getElementById('connectionText').textContent = 'Connected';
-      document.getElementById('heroDate').textContent = `Today is ${formatLongDate(new Date())}.`;
-      document.getElementById('dataNote').textContent = `Tomato • ${stage} stage • Kc ${kc.toFixed(2)} • Wind speed included in ET estimation`;
-
-      document.getElementById('airTempHome').textContent = `${latest.temp.toFixed(1)} °C`;
-      document.getElementById('humidityHome').textContent = `${latest.humidity.toFixed(0)} %RH`;
-      document.getElementById('solarHome').textContent = `${latest.solar.toFixed(1)} W/m²`;
-      document.getElementById('windHome').textContent = `${latest.wind.toFixed(1)} m/s`;
-
-      document.getElementById('soilValue').textContent = `${currentSoil.toFixed(1)}%`;
-      updateSoilGauge(currentSoil);
-
-      let soilState = 'Moderate';
-      if (currentSoil < desiredMoisture - 5) soilState = 'Dry';
-      else if (currentSoil >= desiredMoisture) soilState = 'Adequate';
-      document.getElementById('soilState').textContent = soilState;
-      document.getElementById('soilNote').textContent = `Target moisture is ${desiredMoisture.toFixed(1)}%.`;
-
-      document.getElementById('areaHome').textContent = `${fieldArea.toFixed(0)} m²`;
-      document.getElementById('volumeHome').textContent = `${recommendedVolume.toFixed(0)} L`;
-      document.getElementById('observedHome').textContent = `${actualDepth.toFixed(2)} mm`;
-      document.getElementById('stageHome').textContent = stage.charAt(0).toUpperCase() + stage.slice(1);
-
-      if (rainShutoff && rainfall > 0) {
-        document.getElementById('nextWateringNote').textContent = 'Rain shut off enabled';
-      }
-
-      filteredBudgetRows = getFilteredRows(fullBudgetRows);
-      refreshAnalyticsOnly();
-    }
-
-    async function loadData() {
-      if (!csvUrl) {
-        document.getElementById('connectionText').textContent = 'No Data';
-        initEmptyState();
-        return;
-      }
-
-      try {
-        const res = await fetch(csvUrl);
-        const text = await res.text();
-        const parsed = parseCSV(text);
-        if (!parsed.length) throw new Error('CSV parsed but no usable rows found');
-        updateDashboard(parsed);
-      } catch (err) {
-        document.getElementById('connectionText').textContent = 'No Data';
-        initEmptyState();
-        console.log('Waiting for your CSV data:', err.message);
-      }
-    }
-
-    applySettings();
+    renderAll();
   </script>
 </body>
 </html>
