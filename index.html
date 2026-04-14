@@ -589,7 +589,7 @@
                 <div class="moisture-label">Soil Moisture</div>
                 <div class="moisture-status" id="soilStatusText">Below target</div>
                 <div class="moisture-note">Safe level: <span id="targetSoilLabel">40%</span></div>
-                <div class="small-note">Update your CSV to display the latest soil moisture reading.</div>
+                
               </div>
             </div>
 
@@ -610,7 +610,7 @@
                 </div>
                 <div style="text-align:right;">
                   <div class="schedule-title">Schedule</div>
-                  <div class="small-note" id="selectedScheduleNote">Selected irrigation date</div>
+                  
                 </div>
               </div>
             </div>
@@ -989,7 +989,7 @@ async function loadCSVData() {
       $('dailyEtcCard').textContent = `${c.etc.toFixed(2)} mm/day`;
       $('modeledIrrigationCard').textContent = `${c.modeledMm.toFixed(2)} mm`;
       $('observedCard').textContent = `${c.appliedMm.toFixed(2)} mm`;
-      $('dataStatus').textContent = 'Live Demo';
+      
     }
 
     function drawAxes(ctx, w, h, left, top, right, bottom) {
@@ -1054,7 +1054,7 @@ async function loadCSVData() {
       ctx.beginPath();
       sampleData.forEach((r, i) => {
         const x = left + i * stepX;
-        const y = h - bottom - (r.soil / maxY) * plotH;
+        const y = h - bottom - (liveSoilMoisture / maxY) * plotH;
         if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       });
       ctx.stroke();
@@ -1071,7 +1071,7 @@ async function loadCSVData() {
 
       sampleData.forEach((r, i) => {
         const x = left + i * stepX;
-        const y = h - bottom - (r.soil / maxY) * plotH;
+        const y = h - bottom - (liveSoilMoisture / maxY) * plotH;
         ctx.fillStyle = '#49d86d';
         ctx.beginPath();
         ctx.arc(x, y, 5, 0, Math.PI * 2);
@@ -1178,7 +1178,7 @@ async function loadCSVData() {
           <td>${r.eto.toFixed(2)}</td>
           <td>${etc.toFixed(2)}</td>
           <td>${r.rainfall.toFixed(2)}</td>
-          <td>${r.soil.toFixed(0)}%</td>
+          <td>${liveSoilMoisture.toFixed(0)}%</td>
           <td>${modeledMm.toFixed(2)}</td>
           <td>${appliedMm.toFixed(2)}</td>
           <td>${appliedLiters.toFixed(0)}</td>
@@ -1202,7 +1202,7 @@ async function loadCSVData() {
           r.eto.toFixed(2),
           etc.toFixed(2),
           r.rainfall.toFixed(2),
-          r.soil.toFixed(0),
+          liveSoilMoisture.toFixed(0),
           modeledMm.toFixed(2),
           appliedMm.toFixed(2),
           s.fieldArea.toFixed(0),
