@@ -406,11 +406,16 @@
     }
 
     .date-chip-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
-    }
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.date-chip {
+  width: 100%;
+  text-align: center;
+}
 
     .date-chip {
       border: 1px solid var(--line);
@@ -820,7 +825,9 @@
     let sampleData = [];
     let liveSoilMoisture = 34;
 
-    let selectedIndex = 1;
+    let selectedIndex = 0;
+    let selectedDates = [];
+    let upcomingDates = [];
     let pumpRunning = false;
     let rainShutOff = false;
 
@@ -859,7 +866,9 @@ async function loadCSVData() {
       eto: Number(row.eto)
     }));
 
-    selectedIndex = sampleData.length - 1;
+    upcomingDates = generateUpcomingDates(7);
+    selectedDates = [upcomingDates[0]];
+    selectedIndex = findClosestDataIndex(selectedDates[0]);
 
     document.getElementById('dataStatus').textContent = 'CSV Loaded';
 
@@ -875,15 +884,57 @@ async function loadCSVData() {
       $('clockText').textContent = now.toLocaleTimeString('en-US');
     }
 
-    function formatTodayText(dateStr) {
-      const d = new Date(dateStr);
-      return `Today is ${d.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
-      })}.`;
-    }
+    function formatTodayText(dateInput) {
+  const d = new Date(dateInput);
+  return `Today is ${d.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  })}.`;
+}
+
+function formatDateKey(dateObj) {
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const d = String(dateObj.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function generateUpcomingDates(days = 7) {
+  const dates = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (let i = 0; i < days; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    dates.push(formatDateKey(d));
+  }
+
+  return dates;
+}
+
+function findClosestDataIndex(dateKey) {
+  if (!sampleData.length) return 0;
+
+  const exactIndex = sampleData.findIndex(row => String(row.date).slice(0, 10) === dateKey);
+  if (exactIndex !== -1) return exactIndex;
+
+  return sampleData.length - 1;
+}
+
+function getNextWateringDateTime() {
+  const { startTime } = getSettings();
+  const now = new Date();
+
+  const upcomingSchedules = selectedDates
+    .map(dateKey => new Date(`${dateKey}T${startTime}`))
+    .filter(d => !isNaN(d) && d > now)
+    .sort((a, b) => a - b);
+
+  return upcomingSchedules.length ? upcomingSchedules[0] : null;
+}
 
     function getSettings() {
       return {
@@ -911,26 +962,44 @@ async function loadCSVData() {
     }
 
     function renderDateChips() {
-      const wrap = $('dateChips');
-      wrap.innerHTML = '';
-      sampleData.forEach((item, index) => {
-        const d = new Date(item.date);
-        const chip = document.createElement('button');
-        chip.className = 'date-chip' + (index === selectedIndex ? ' active' : '');
-        chip.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        chip.onclick = () => {
-          selectedIndex = index;
-          renderAll();
-        };
-        wrap.appendChild(chip);
-      });
-    }
+  const wrap = $('dateChips');
+  wrap.innerHTML = '';
+
+  upcomingDates = generateUpcomingDates(7);
+
+  upcomingDates.forEach((dateKey) => {
+    const d = new Date(`${dateKey}T00:00:00`);
+    const chip = document.createElement('button');
+
+    const isActive = selectedDates.includes(dateKey);
+    chip.className = 'date-chip' + (isActive ? ' active' : '');
+    chip.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    chip.onclick = () => {
+      if (selectedDates.includes(dateKey)) {
+        selectedDates = selectedDates.filter(x => x !== dateKey);
+      } else {
+        selectedDates.push(dateKey);
+      }
+
+      selectedDates.sort();
+
+      if (selectedDates.length > 0) {
+        selectedIndex = findClosestDataIndex(selectedDates[0]);
+      }
+
+      renderAll();
+    };
+
+    wrap.appendChild(chip);
+  });
+}
 
     function renderHome() {
       const record = sampleData[selectedIndex];
       const c = calcForRecord(record);
 
-      $('todayText').textContent = formatTodayText(record.date);
+      $('todayText').textContent = formatTodayText(new Date());
 
       $('tempValue').textContent = `${record.temp.toFixed(1)} °C`;
       $('rhValue').textContent = `${record.rh.toFixed(0)} %`;
@@ -967,18 +1036,23 @@ async function loadCSVData() {
       $('appliedIrrigationCard').textContent = `${c.appliedMm.toFixed(2)} mm`;
       $('growthStageCard').textContent = c.growthStage;
 
-      const wateringDate = new Date(`${record.date}T${c.startTime || '06:00'}`);
-      $('nextWatering').textContent =
-        wateringDate.toLocaleDateString('en-US', {
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric'
-        }) +
-        ' · ' +
-        wateringDate.toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: '2-digit'
-        });
+      const nextWatering = getNextWateringDateTime();
+
+if (nextWatering) {
+  $('nextWatering').textContent =
+    nextWatering.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    }) +
+    ' · ' +
+    nextWatering.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+} else {
+  $('nextWatering').textContent = 'No upcoming schedule';
+}
     }
 
     function renderAnalyticsCards() {
@@ -1223,6 +1297,8 @@ async function loadCSVData() {
     }
 
     function renderAll() {
+      if (!sampleData.length) return;
+
       updateClock();
       renderDateChips();
       renderHome();
