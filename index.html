@@ -515,16 +515,7 @@
     .warn { color: #d18b11; }
     .bad { color: #ef6f6f; }
 
-    @media (max-width: 380px) {
-      .control-row,
-      .metric-grid-2,
-      .field-grid,
-      .button-row,
-      .analytics-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .schedule-value {
+    .schedule-value {
   font-weight: 700;
   color: var(--muted);
   font-size: 0.84rem;
@@ -539,6 +530,16 @@
   font-size: 1.35rem;
   line-height: 1.1;
 }
+    @media (max-width: 380px) {
+      .control-row,
+      .metric-grid-2,
+      .field-grid,
+      .button-row,
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      
     }
   </style>
 </head>
@@ -890,12 +891,21 @@ async function loadCSVData() {
 }
 
     function updateClock() {
-      const now = new Date();
-      $('clockText').textContent = now.toLocaleTimeString('en-US');
-    }
+  const now = new Date();
+  $('clockText').textContent = now.toLocaleTimeString('en-US');
+}
 
-    function formatTodayText(dateInput) {
- function formatDateKey(dateObj) {
+function formatTodayText(dateInput) {
+  const d = new Date(dateInput);
+  return `Today is ${d.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  })}.`;
+}
+
+function formatDateKey(dateObj) {
   const y = dateObj.getFullYear();
   const m = String(dateObj.getMonth() + 1).padStart(2, '0');
   const d = String(dateObj.getDate()).padStart(2, '0');
@@ -951,16 +961,6 @@ function formatCountdown(targetDate) {
   if (days > 0) return `Starts in ${days}d ${hours}h`;
   if (hours > 0) return `Starts in ${hours}h ${minutes}m`;
   return `Starts in ${minutes}m`;
-}
-  const { startTime } = getSettings();
-  const now = new Date();
-
-  const upcomingSchedules = selectedDates
-    .map(dateKey => new Date(`${dateKey}T${startTime}`))
-    .filter(d => !isNaN(d) && d > now)
-    .sort((a, b) => a - b);
-
-  return upcomingSchedules.length ? upcomingSchedules[0] : null;
 }
 
     function getSettings() {
