@@ -817,19 +817,58 @@
   </div>
 
   <script>
-    const sampleData = [
-      { date: '2026-04-13', temp: 30.5, rh: 71, solar: 17.3, wind: 1.7, rainfall: 0.0, eto: 4.5, soil: 35 },
-      { date: '2026-04-14', temp: 31.2, rh: 68, solar: 18.5, wind: 1.9, rainfall: 0.0, eto: 4.8, soil: 34 },
-      { date: '2026-04-15', temp: 30.8, rh: 70, solar: 17.9, wind: 2.1, rainfall: 2.0, eto: 4.6, soil: 36 },
-      { date: '2026-04-16', temp: 32.1, rh: 66, solar: 19.2, wind: 2.3, rainfall: 0.0, eto: 5.0, soil: 33 },
-      { date: '2026-04-17', temp: 31.5, rh: 69, solar: 18.0, wind: 2.0, rainfall: 1.0, eto: 4.7, soil: 37 }
-    ];
+    let sampleData = [];
+    let liveSoilMoisture = 34;
 
     let selectedIndex = 1;
     let pumpRunning = false;
     let rainShutOff = false;
 
     const $ = (id) => document.getElementById(id);
+
+    function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+
+  return lines.slice(1).map(line => {
+    const values = line.split(',');
+    const obj = {};
+    headers.forEach((h, i) => {
+      obj[h] = isNaN(values[i]) ? values[i] : Number(values[i]);
+    });
+    return obj;
+  });
+}
+
+async function loadCSVData() {
+  const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ufbSsBHpbEfwiqiTkAD5LwKmeZMfN--GRgcJQJIjR4qm35QI6Xk23pHo_FPtmdE1XU-Zfh8PHBj4/pub?gid=0&single=true&output=csv';
+
+  try {
+    const res = await fetch(url);
+    const text = await res.text();
+
+    const data = parseCSV(text);
+
+    sampleData = data.map(row => ({
+      date: row.date,
+      temp: Number(row.temp),
+      rh: Number(row.rh),
+      solar: Number(row.solar),
+      wind: Number(row.wind),
+      rainfall: Number(row.rainfall),
+      eto: Number(row.eto)
+    }));
+
+    selectedIndex = sampleData.length - 1;
+
+    document.getElementById('dataStatus').textContent = 'CSV Loaded';
+
+    renderAll();
+  } catch (err) {
+    console.error(err);
+    document.getElementById('dataStatus').textContent = 'No Data';
+  }
+}
 
     function updateClock() {
       const now = new Date();
@@ -867,7 +906,7 @@
       const appliedLiters = s.pumpFlowRate * s.runTime;
       const appliedMm = s.fieldArea > 0 ? appliedLiters / s.fieldArea : 0;
       const modeledLiters = modeledMm * s.fieldArea;
-      const soilCurrent = pumpRunning ? Math.min(s.targetSoil + 2, 46) : record.soil;
+      const soilCurrent = liveSoilMoisture;
       return { ...s, etc, modeledMm, modeledLiters, appliedLiters, appliedMm, soilCurrent };
     }
 
@@ -1246,7 +1285,7 @@
       }
     });
 
-    renderAll();
+    loadCSVData();
   </script>
 </body>
 </html>
