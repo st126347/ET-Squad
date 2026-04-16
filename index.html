@@ -396,19 +396,28 @@ letter-spacing: 0.2px;
       border-radius: 0 0 16px 16px;
     }
 
-    .target-line {
-      position: absolute;
-      left: 0;
-      width: 100%;
-      border-top: 3px dashed var(--orange);
-      bottom: 40%;
-      z-index: 2;
-    }
+    .range-line {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  z-index: 2;
+  transition: bottom 0.45s ease;
+}
+
+.lower-line {
+  border-top: 3px dashed var(--orange);
+  bottom: 40%;
+}
+
+.upper-line {
+  border-top: 3px dashed #57ef52;
+  bottom: 70%;
+}
 
     .moisture-percent {
   font-size: 1.2rem;
   font-weight: 800;
-  color: #aee9e1;
+  color: #e9d4ae;
   line-height: 1;
 }
 
@@ -604,7 +613,6 @@ letter-spacing: 0.2px;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
-      .field-grid,
       .button-row,
       .analytics-grid,
       .comparison-summary {
@@ -708,13 +716,14 @@ letter-spacing: 0.2px;
               <h3>Soil Moisture Status</h3>
               <div class="moisture-wrap">
                 <div class="moisture-bar-outer">
-                  <div id="targetLine" class="target-line"></div>
-                  <div id="moistureFill" class="moisture-fill"></div>
+                 <div id="lowerLine" class="range-line lower-line"></div>
+                 <div id="upperLine" class="range-line upper-line"></div>
+                 <div id="moistureFill" class="moisture-fill"></div>
                 </div>
                 <div class="moisture-percent" id="soilValue">34%</div>
                 <div class="moisture-label">Soil Moisture</div>
-                <div class="moisture-status" id="soilStatusText">Below target</div>
-                <div class="moisture-note">Safe level: <span id="targetSoilLabel">40%</span></div>
+                <div class="moisture-status" id="soilStatusText">Below safe range</div>
+                <div class="moisture-note">Safe Range: <span id="safeRangeLabel">40% - 70%</span></div>
               </div>
             </div>
 
@@ -756,13 +765,12 @@ letter-spacing: 0.2px;
               <div class="field"><label>Crop Type</label><select id="cropType"><option selected>Tomato</option><option>Rice</option><option>Maize</option></select></div>
               <div class="field"><label>Growth Stage</label><select id="growthStage"><option value="0.80" selected>Initial</option><option value="1.15">Mid</option><option value="0.80">Late</option></select></div>
               <div class="field"><label>Crop Coefficient (Kc)</label><input id="kcInput" type="number" step="0.01" value="0.80" /></div>
-              <div class="field"><label>Target Soil Moisture (%)</label><input id="targetSoil" type="number" step="1" value="40" /></div>
-              <div class="field"><label>Field Area (m²)</label><input id="fieldArea" type="number" step="1" value="100" /></div>
               <div class="field"><label>Start Time</label><input id="startTime" type="time" value="06:00" /></div>
               <div class="field"><label>Run Time (min)</label><input id="runTime" type="number" step="1" value="30" /></div>
               <div class="field"><label>Cycle (min)</label><input id="cycleTime" type="number" step="1" value="10" /></div>
               <div class="field"><label>Soak (min)</label><input id="soakTime" type="number" step="1" value="20" /></div>
-              <div class="field full"><label>Pump Flow Rate (L/min)</label><input id="pumpFlowRate" type="number" step="0.1" value="2.0" /></div>
+              <div class="field"><label>Pump Flow Rate (L/min)</label><input id="pumpFlowRate" type="number" step="0.1" value="2.0" /></div>
+              <div class="field"><label>Field Area (m²)</label><input id="fieldArea" type="number" step="1" value="100" /></div>
             </div>
           </div>
 
@@ -852,7 +860,34 @@ letter-spacing: 0.2px;
     let rainShutOff = false;
     let soilChart, comparisonChart;
 
+    const kcValues = {
+  Tomato: {
+    Initial: 0.60,
+    Mid: 1.15,
+    Late: 0.80
+  },
+  Rice: {
+    Initial: 1.01,
+    Mid: 1.31,
+    Late: 1.12
+  },
+  Maize: {
+    Initial: 0.55,
+    Mid: 1.19,
+    Late: 0.56
+  }
+};
+
     const $ = (id) => document.getElementById(id);
+
+    function updateKcAutomatically() {
+  const crop = $('cropType').value;
+  const stage = $('growthStage').options[$('growthStage').selectedIndex].text;
+
+  if (kcValues[crop] && kcValues[crop][stage]) {
+    $('kcInput').value = kcValues[crop][stage].toFixed(2);
+  }
+}
 
     function parseCSV(text) {
       const lines = text.trim().split('\n');
@@ -923,7 +958,9 @@ letter-spacing: 0.2px;
     function getSettings() {
       return {
         kc: parseFloat($('kcInput').value) || 0.8,
-        targetSoil: parseFloat($('targetSoil').value) || 40,
+        cropType: $('cropType').value,
+        lowerLimit: 35,
+        upperLimit: 45,
         fieldArea: parseFloat($('fieldArea').value) || 100,
         runTime: parseFloat($('runTime').value) || 30,
         cycleTime: parseFloat($('cycleTime').value) || 10,
@@ -1010,10 +1047,23 @@ letter-spacing: 0.2px;
       $('windValue').textContent = `${record.wind.toFixed(1)} m/s`;
       const soilPercent = Math.max(0, Math.min(c.soilCurrent, 100));
       $('soilValue').textContent = `${soilPercent.toFixed(0)}%`;
-      $('soilStatusText').textContent = soilPercent >= c.targetSoil ? 'At or above target' : 'Below target';
-      $('targetSoilLabel').textContent = `${c.targetSoil.toFixed(0)}%`;
-      $('moistureFill').style.height = `${soilPercent}%`;
-      $('targetLine').style.bottom = `${c.targetSoil}%`;
+      const lowerLimit = 40;
+const upperLimit = 70;
+
+let soilStatus = '';
+if (soilPercent < lowerLimit) {
+  soilStatus = 'Below safe range';
+} else if (soilPercent > upperLimit) {
+  soilStatus = 'Above safe range';
+} else {
+  soilStatus = 'Within safe range';
+}
+
+$('soilStatusText').textContent = soilStatus;
+$('safeRangeLabel').textContent = `${lowerLimit}% - ${upperLimit}%`;
+$('moistureFill').style.height = `${soilPercent}%`;
+$('lowerLine').style.bottom = `${lowerLimit}%`;
+$('upperLine').style.bottom = `${upperLimit}%`;
       $('pumpState').textContent = rainShutOff ? 'Rain Shutoff Active' : (pumpRunning ? 'Running' : 'Stopped');
       $('pumpState').className = 'control-value ' + (rainShutOff ? 'warn' : (pumpRunning ? 'ok' : ''));
       $('rainBtn').textContent = `Rain Shut Off: ${rainShutOff ? 'ON' : 'OFF'}`;
@@ -1041,7 +1091,8 @@ letter-spacing: 0.2px;
       const data = getChartData();
       const labels = data.map(r => r.label || new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
       const soilValues = data.map((_, i) => i === data.length - 1 ? liveSoilMoisture : Math.max(26, liveSoilMoisture - (data.length - 1 - i) * 0.3));
-      const targetValues = data.map(() => getSettings().targetSoil);
+      const lowerValues = data.map(() => getSettings().lowerLimit);
+      const upperValues = data.map(() => getSettings().upperLimit);
       if (soilChart) soilChart.destroy();
       soilChart = new Chart($('soilChart').getContext('2d'), {
         type: 'line',
@@ -1062,9 +1113,19 @@ letter-spacing: 0.2px;
               fill: false
             },
             {
-              label: 'Target Moisture (%)',
-              data: targetValues,
-              borderColor: '#8DDFDA',
+              label: 'Lower Limit (%)',
+              data: lowerValues,
+              borderColor: '#f0ad4e',
+              borderDash: [6,4],
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0,
+              fill: false
+            },
+            {
+              label: 'Upper Limit (%)',
+              data: upperValues,
+              borderColor: '#e9ef52',
               borderDash: [6,4],
               borderWidth: 2,
               pointRadius: 0,
@@ -1149,10 +1210,7 @@ letter-spacing: 0.2px;
           responsive: true,
           maintainAspectRatio: false,
           devicePixelRatio: 3,
-          animation: {
-            duration: 1100,
-            easing: 'easeOutQuart'
-          },
+          animation: false,
           interaction: {
             mode: 'index',
             intersect: false
@@ -1241,8 +1299,17 @@ letter-spacing: 0.2px;
       });
     });
 
-    $('growthStage').addEventListener('change', (e) => { $('kcInput').value = e.target.value; renderAll(); });
-    ['kcInput','targetSoil','fieldArea','runTime','cycleTime','soakTime','pumpFlowRate','startTime'].forEach(id => { $(id).addEventListener('input', renderAll); });
+    $('growthStage').addEventListener('change', () => {
+  updateKcAutomatically();
+  renderAll();
+});
+
+    $('cropType').addEventListener('change', () => {
+  updateKcAutomatically();
+  renderAll();
+});
+
+    ['kcInput','fieldArea','runTime','cycleTime','soakTime','pumpFlowRate','startTime'].forEach(id => { $(id).addEventListener('input', renderAll); });
     $('reportRange').addEventListener('change', renderAll);
     $('startBtn').addEventListener('click', () => {
       if (!rainShutOff) pumpRunning = true;
@@ -1287,6 +1354,7 @@ if (downloadBtn) {
     window.addEventListener('resize', () => { if ($('page-analytics').classList.contains('active')) { drawSoilChart(); drawComparisonChart(); } });
 
     loadCSVData();
+    updateKcAutomatically();
   </script>
 </body>
 </html>
