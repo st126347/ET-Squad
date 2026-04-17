@@ -925,6 +925,8 @@ letter-spacing: 0.2px;
     let rainForecastChart;
     let realtimeSoilLabels = [];
     let realtimeSoilValues = [];
+    let soilHistoryLabels = [];
+let soilHistoryValues = [];
 
     const kcValues = {
   Tomato: {
@@ -1077,8 +1079,16 @@ if (timeEl) {
   second: '2-digit'
 });
 
+// full history for CSV export
+soilHistoryLabels.push(label);
+soilHistoryValues.push(liveSoilMoisture);
+
+// latest points only for chart
 realtimeSoilLabels.push(label);
 realtimeSoilValues.push(liveSoilMoisture);
+
+if (realtimeSoilLabels.length > 10) realtimeSoilLabels.shift();
+if (realtimeSoilValues.length > 10) realtimeSoilValues.shift();
 
 // keep only latest 10 points
 if (realtimeSoilLabels.length > 10) realtimeSoilLabels.shift();
@@ -1540,12 +1550,37 @@ if (rainForecastData) {
     }
 
 function downloadSoilMonitoringCsv() {
-  const rows = [['Timestamp', 'SoilMoisture_percent']];
+  const rows = [];
 
-  for (let i = 0; i < realtimeSoilLabels.length; i++) {
+  if (soilHistoryValues.length > 0) {
+    const minMoisture = Math.min(...soilHistoryValues);
+    const maxMoisture = Math.max(...soilHistoryValues);
+    const avgMoisture = soilHistoryValues.reduce((a, b) => a + b, 0) / soilHistoryValues.length;
+
+    rows.push(['Soil Monitoring History Summary']);
+    rows.push(['Total Readings', soilHistoryValues.length]);
+    rows.push(['Minimum Moisture (%)', minMoisture.toFixed(0)]);
+    rows.push(['Maximum Moisture (%)', maxMoisture.toFixed(0)]);
+    rows.push(['Average Moisture (%)', avgMoisture.toFixed(1)]);
+    rows.push([]);
+  }
+
+  rows.push(['Timestamp', 'SoilMoisture_percent', 'Status']);
+
+  for (let i = 0; i < soilHistoryLabels.length; i++) {
+    const value = Number(soilHistoryValues[i]);
+    let status = 'Within safe range';
+
+    if (value < 40) {
+      status = 'Below safe range';
+    } else if (value > 70) {
+      status = 'Above safe range';
+    }
+
     rows.push([
-      realtimeSoilLabels[i],
-      realtimeSoilValues[i]
+      soilHistoryLabels[i],
+      value,
+      status
     ]);
   }
 
@@ -1555,13 +1590,12 @@ function downloadSoilMonitoringCsv() {
 
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'soil_monitoring_log.csv';
+  a.download = 'soil_monitoring_history_summary.csv';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
-
     function renderAll() {
       if (!sampleData.length) return;
       updateClock(); renderDateChips(); renderHome(); renderAnalyticsCards(); renderTable(); drawSoilChart(); drawComparisonChart();
