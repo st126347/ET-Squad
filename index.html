@@ -864,6 +864,9 @@ letter-spacing: 0.2px;
             <button class="btn download-btn" id="downloadSoilChartBtn">
   Download Soil Graph (PNG)
 </button>
+<button class="btn download-btn" id="downloadSoilCsvBtn" style="margin-top:8px;">
+  Download Soil Monitoring CSV
+</button>
           </div>
 
           <div class="card">
@@ -1536,6 +1539,29 @@ if (rainForecastData) {
       const a = document.createElement('a'); a.href = url; a.download = 'water_budget.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     }
 
+function downloadSoilMonitoringCsv() {
+  const rows = [['Timestamp', 'SoilMoisture_percent']];
+
+  for (let i = 0; i < realtimeSoilLabels.length; i++) {
+    rows.push([
+      realtimeSoilLabels[i],
+      realtimeSoilValues[i]
+    ]);
+  }
+
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'soil_monitoring_log.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
     function renderAll() {
       if (!sampleData.length) return;
       updateClock(); renderDateChips(); renderHome(); renderAnalyticsCards(); renderTable(); drawSoilChart(); drawComparisonChart();
@@ -1578,6 +1604,11 @@ if (rainForecastData) {
     
     const downloadBtn = $('downloadChartBtn');
     const downloadSoilBtn = $('downloadSoilChartBtn');
+    const downloadSoilCsvBtn = $('downloadSoilCsvBtn');
+
+    if (downloadSoilCsvBtn) {
+  downloadSoilCsvBtn.addEventListener('click', downloadSoilMonitoringCsv);
+}
 
 if (downloadSoilBtn) {
   downloadSoilBtn.addEventListener('click', () => {
