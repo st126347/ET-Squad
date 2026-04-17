@@ -88,6 +88,29 @@ letter-spacing: 0.2px;
       font-size: 1.4rem;
     }
 
+.brand-logo {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 70px;
+  background: rgba(25, 56, 44, 0.92);
+  box-shadow: 0 0 12px rgba(56, 198, 192, 0.5);
+}
+
+.brand-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  border-radius: 50%;
+}
+
+
     .brand-text h1 {
       margin: 0;
       font-size: 1.12rem;
@@ -685,7 +708,9 @@ letter-spacing: 0.2px;
   <div class="app-shell">
     <div class="topbar">
       <div class="brand-wrap">
-        <div class="brand-logo">💧</div>
+        <div class="brand-logo">
+  <img src="logo.png" alt="ET Squad Logo" class="brand-logo-img">
+</div>
         <div class="brand-text">
           <h1>ET Squad</h1>
           <p>Evapotranspiration-based irrigation monitoring and decision support</p>
@@ -711,9 +736,41 @@ letter-spacing: 0.2px;
             </div>
           </div>
 
+          <div class="metric-grid-2">
+  <div class="metric-box summary-box">
+    <div class="metric-label">Forecast Rainfall Today</div>
+    <div class="metric-value" id="rainForecastToday">-- mm</div>
+    <div class="metric-sub" id="rainForecastStatus">Loading forecast...</div>
+  </div>
+  <div class="metric-box summary-box">
+    <div class="metric-label">Rain Probability</div>
+    <div class="metric-value" id="rainProbabilityToday">-- %</div>
+    <div class="metric-sub">Based on hourly forecast</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>🌧️ Irrigation Recommendation</h3>
+  <div class="schedule-box">
+    <div class="schedule-main">
+      <div class="schedule-title">Rain-Based Advisory</div>
+      <div class="schedule-countdown" id="rainDecisionText">Checking weather forecast...</div>
+
+    </div>
+  </div>
+</div>
+
           <div class="control-row">
             <div class="card compact-card">
               <h3>Soil Moisture Status</h3>
+                <div id="firebaseStatus" style="font-size: 12px; opacity: 0.7; margin-top: 4px;">
+  <span style="color:#38c6c0;">●</span> Live Data
+</div>
+
+<div id="firebaseTime" style="font-size: 11px; opacity: 0.6;">
+  Last synced: --
+</div>
+
               <div class="moisture-wrap">
                 <div class="moisture-bar-outer">
                  <div id="lowerLine" class="range-line lower-line"></div>
@@ -730,7 +787,7 @@ letter-spacing: 0.2px;
             <div class="card compact-card">
               <h3>☑️ Irrigation Control</h3>
               <div class="control-value" id="pumpState">Stopped</div>
-              <div class="button-row">
+              <div class="button-row" id="manualControlRow">
                 <button class="btn btn-green" id="startBtn">Start</button>
                 <button class="btn btn-red" id="stopBtn">Stop</button>
               </div>
@@ -750,7 +807,7 @@ letter-spacing: 0.2px;
           <div class="metric-grid-2">
             <div class="metric-box summary-box"><div class="metric-label">Field Area</div><div class="metric-value" id="fieldAreaCard">100 m²</div></div>
             <div class="metric-box summary-box"><div class="metric-label">Recommended Irrigation</div><div class="metric-value" id="recommendedVolumeCard">384 L</div></div>
-            <div class="metric-box summary-box"><div class="metric-label">Applied Irrigation</div><div class="metric-value" id="appliedIrrigationCard">60 L</div></div>
+            <div class="metric-box summary-box"><div class="metric-label">Applied Irrigation Today</div><div class="metric-value" id="appliedIrrigationCard">60 L</div></div>
             <div class="metric-box summary-box"><div class="metric-label">Growth Stage</div><div class="metric-value" id="growthStageCard">Initial</div></div>
           </div>
         </div>
@@ -852,13 +909,19 @@ letter-spacing: 0.2px;
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     let sampleData = [];
+    let sensorObservedIrrigation = null;
     let liveSoilMoisture = 34;
+    const FIREBASE_CURRENT_URL = "https://irrigation-tomato-default-rtdb.asia-southeast1.firebasedatabase.app/tomato_data/current.json";
     let selectedIndex = 0;
     let selectedDates = [];
     let upcomingDates = [];
     let pumpRunning = false;
     let rainShutOff = false;
     let soilChart, comparisonChart;
+    let rainForecastData = null;
+    let rainForecastChart;
+    let realtimeSoilLabels = [];
+    let realtimeSoilValues = [];
 
     const kcValues = {
   Tomato: {
@@ -901,13 +964,13 @@ letter-spacing: 0.2px;
     }
 
     async function loadCSVData() {
-      const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR5ufbSsBHpbEfwiqiTkAD5LwKmeZMfN--GRgcJQJIjR4qm35QI6Xk23pHo_FPtmdE1XU-Zfh8PHBj4/pub?gid=0&single=true&output=csv';
+      const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRhudV1vF2c8nSsVXKfZ6NNfOxhYOyk9K3YsNFDtuHdzILZmXxRU2qhdY0wfV2fvIpHyxkLl2zV2-_X/pub?gid=0&single=true&output=csv';
       try {
         const res = await fetch(url);
         const text = await res.text();
         const data = parseCSV(text);
         sampleData = data.map(row => ({
-          date: row.date, temp: Number(row.temp), rh: Number(row.rh), solar: Number(row.solar), wind: Number(row.wind), rainfall: Number(row.rainfall), eto: Number(row.eto)
+          date: row.date, temp: Number(row.temp), rh: Number(row.rh), solar: Number(row.solar), wind: Number(row.wind), rainfall: Number(row.rainfall), eto: Number(row.eto), observedCSV: Number(row.observed_irrigation) || 0
         }));
         upcomingDates = generateUpcomingDates(7);
         selectedDates = [upcomingDates[0]];
@@ -919,6 +982,152 @@ letter-spacing: 0.2px;
         $('dataStatus').textContent = 'No Data';
       }
     }
+
+    async function loadRainForecast() {
+  const lat = 14.0167;
+  const lon = 100.5333;
+
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=precipitation_sum,precipitation_probability_max&timezone=auto&forecast_days=7`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    // Update timestamp display
+if (data.timestamp) {
+  const timeEl = $('firebaseTime');
+  if (timeEl) {
+    timeEl.textContent = 'Last synced: ' + data.timestamp;
+  }
+}
+
+// Show live indicator
+const statusEl = $('firebaseStatus');
+if (statusEl) {
+  statusEl.textContent = '● Live Data';
+}
+    console.log("Open-Meteo response:", data);
+
+    rainForecastData = data;
+
+    const todayRain = Number(data.daily?.precipitation_sum?.[0] ?? 0);
+    const todayProb = Number(data.daily?.precipitation_probability_max?.[0] ?? 0);
+
+    $('rainForecastToday').textContent = `${todayRain.toFixed(1)} mm`;
+    $('rainProbabilityToday').textContent = `${todayProb.toFixed(0)} %`;
+
+    let forecastStatus = 'No rainfall expected';
+    if (todayRain >= 10) forecastStatus = 'Moderate to high rainfall forecast';
+    else if (todayRain >= 5) forecastStatus = 'Rainfall likely today';
+    else if (todayRain > 0) forecastStatus = 'Light rainfall possible';
+
+    $('rainForecastStatus').textContent = forecastStatus;
+
+    updateRainDecisionUI();
+  } catch (err) {
+  console.error('Rain forecast load error:', err);
+  $('rainForecastToday').textContent = '-- mm';
+  $('rainProbabilityToday').textContent = '-- %';
+  $('rainForecastStatus').textContent = 'Forecast unavailable';
+
+  const decisionTextEl = $('rainDecisionText');
+
+  if (decisionTextEl) {
+    decisionTextEl.textContent = 'Rainfall forecast unavailable';
+  }
+
+
+}
+}
+
+async function loadFirebaseCurrent() {
+  try {
+    const res = await fetch(FIREBASE_CURRENT_URL);
+    if (!res.ok) {
+      throw new Error(`Firebase HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    console.log("Firebase current:", data);
+    const statusEl = $('firebaseStatus');
+if (statusEl) {
+  statusEl.innerHTML = '<span style="color:#38c6c0;">●</span> Live Data';
+}
+
+const timeEl = $('firebaseTime');
+if (timeEl) {
+  timeEl.textContent = data && data.timestamp
+    ? `Last synced: ${data.timestamp}`
+    : 'Last synced: --';
+}
+
+    if (data && data.moisture !== undefined && data.moisture !== null && !isNaN(Number(data.moisture))) {
+      liveSoilMoisture = Math.max(0, Math.min(Number(data.moisture), 100));
+    }
+
+    const label = data && data.timestamp ? data.timestamp : new Date().toLocaleTimeString('en-US', {
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit'
+});
+
+realtimeSoilLabels.push(label);
+realtimeSoilValues.push(liveSoilMoisture);
+
+// keep only latest 10 points
+if (realtimeSoilLabels.length > 10) realtimeSoilLabels.shift();
+if (realtimeSoilValues.length > 10) realtimeSoilValues.shift();
+
+    if (data && typeof data.pump === "string") {
+      pumpRunning = data.pump.toUpperCase() === "ON";
+    }
+
+    if (sampleData.length) {
+      renderHome();
+      if ($('page-analytics').classList.contains('active')) {
+        renderTable();
+        drawSoilChart();
+        drawComparisonChart();
+      }
+    }
+  } catch (err) {
+    console.error("Firebase load error:", err);
+  }
+}
+
+function shouldDelayIrrigation() {
+  if (!rainForecastData?.daily?.precipitation_sum) return false;
+  return (rainForecastData.daily.precipitation_sum[0] || 0) >= 5;
+}
+
+function updateRainDecisionUI() {
+  const decisionTextEl = $('rainDecisionText');
+
+  if (!decisionTextEl) return;
+
+  if (!rainForecastData?.daily?.precipitation_sum) {
+    decisionTextEl.textContent = 'No rain advisory available';
+    decisionTextEl.className = 'schedule-countdown';
+    return;
+  }
+
+  const todayRain = Number(rainForecastData.daily.precipitation_sum[0] || 0);
+
+  if (shouldDelayIrrigation()) {
+    decisionTextEl.textContent = 'Moderate rainfall expected. Consider delaying irrigation.';
+    decisionTextEl.className = 'schedule-countdown warn';
+  } else if (todayRain > 0) {
+    decisionTextEl.textContent = 'Light rainfall expected. Irrigation can proceed.';
+    decisionTextEl.className = 'schedule-countdown ok';
+  } else {
+    decisionTextEl.textContent = 'No rainfall expected. Irrigation can proceed.';
+    decisionTextEl.className = 'schedule-countdown ok';
+  }
+}
+
 
     function updateClock() { $('clockText').textContent = new Date().toLocaleTimeString('en-US'); }
     function formatTodayText(dateInput) {
@@ -971,6 +1180,13 @@ letter-spacing: 0.2px;
       };
     }
 
+    function getObservedIrrigation(record) {
+  if (sensorObservedIrrigation !== null && !isNaN(sensorObservedIrrigation)) {
+    return Number(sensorObservedIrrigation);
+  }
+  return Number(record.observedCSV) || 0;
+}
+
     function calcForRecord(record) {
       const s = getSettings();
       const etc = record.eto * s.kc;
@@ -984,10 +1200,15 @@ letter-spacing: 0.2px;
       const elapsedMinutes = Math.max(0, currentMinutes - startTotalMinutes);
       const activeRunTime = pumpRunning ? Math.min(elapsedMinutes, s.runTime) : 0;
 
-      const appliedLiters = s.pumpFlowRate * activeRunTime;
-      const appliedMm = s.fieldArea > 0 ? appliedLiters / s.fieldArea : 0;
-      const differenceLiters = appliedLiters - modeledLiters;
-      const status = differenceLiters > 20 ? 'Over-irrigated' : differenceLiters < -20 ? 'Under-irrigated' : 'Balanced';
+      const appliedLitersAuto = s.pumpFlowRate * activeRunTime;
+const appliedLiters = (sensorObservedIrrigation !== null && !isNaN(sensorObservedIrrigation))
+  ? Number(sensorObservedIrrigation)
+  : ((Number(record.observedCSV) || 0) > 0 ? Number(record.observedCSV) : appliedLitersAuto);
+
+const appliedMm = s.fieldArea > 0 ? appliedLiters / s.fieldArea : 0;
+const differenceLiters = appliedLiters - modeledLiters;
+const status = differenceLiters > 20 ? 'Over-irrigated' : differenceLiters < -20 ? 'Under-irrigated' : 'Balanced';
+
       const soilCurrent = liveSoilMoisture;
       return { ...s, etc, modeledMm, modeledLiters, appliedLiters, appliedMm, differenceLiters, status, soilCurrent, activeRunTime };
     }
@@ -1006,6 +1227,7 @@ letter-spacing: 0.2px;
         const avgWind = chunk.reduce((sum, r) => sum + r.wind, 0) / chunk.length;
         const totalRain = chunk.reduce((sum, r) => sum + r.rainfall, 0);
         const avgEto = chunk.reduce((sum, r) => sum + r.eto, 0) / chunk.length;
+        const totalObserved = chunk.reduce((sum, r) => sum + (Number(r.observedCSV) || 0), 0);
         weekly.push({
           date: chunk[chunk.length - 1].date,
           label: `W${weekly.length + 1}`,
@@ -1014,7 +1236,8 @@ letter-spacing: 0.2px;
           solar: avgSolar,
           wind: avgWind,
           rainfall: totalRain,
-          eto: avgEto
+          eto: avgEto,
+          observedCSV: totalObserved
         });
       }
       return weekly;
@@ -1038,6 +1261,17 @@ letter-spacing: 0.2px;
       });
     }
 
+    function updateControlVisibility() {
+  const mode = $('controlMode').value;
+  const manualRow = $('manualControlRow');
+
+  if (mode === 'Manual') {
+    manualRow.style.display = 'grid';
+  } else {
+    manualRow.style.display = 'none';
+  }
+}
+
     function renderHome() {
       const record = sampleData[selectedIndex]; const c = calcForRecord(record);
       $('todayText').textContent = formatTodayText(new Date());
@@ -1047,8 +1281,8 @@ letter-spacing: 0.2px;
       $('windValue').textContent = `${record.wind.toFixed(1)} m/s`;
       const soilPercent = Math.max(0, Math.min(c.soilCurrent, 100));
       $('soilValue').textContent = `${soilPercent.toFixed(0)}%`;
-      const lowerLimit = 40;
-const upperLimit = 70;
+      const lowerLimit = 30;
+const upperLimit = 50;
 
 let soilStatus = '';
 if (soilPercent < lowerLimit) {
@@ -1079,6 +1313,11 @@ $('upperLine').style.bottom = `${upperLimit}%`;
         $('nextWatering').textContent = 'No upcoming schedule';
         $('nextWateringCountdown').textContent = 'No active schedule';
       }
+
+if (rainForecastData) {
+  updateRainDecisionUI();
+}
+
     }
 
     function renderAnalyticsCards() {
@@ -1088,100 +1327,114 @@ $('upperLine').style.bottom = `${upperLimit}%`;
     }
 
     function drawSoilChart() {
-      const data = getChartData();
-      const labels = data.map(r => r.label || new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-      const soilValues = data.map((_, i) => i === data.length - 1 ? liveSoilMoisture : Math.max(26, liveSoilMoisture - (data.length - 1 - i) * 0.3));
-      const lowerValues = data.map(() => getSettings().lowerLimit);
-      const upperValues = data.map(() => getSettings().upperLimit);
-      if (soilChart) soilChart.destroy();
-      soilChart = new Chart($('soilChart').getContext('2d'), {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: 'Soil Moisture (%)',
-              data: soilValues,
-              borderColor: '#ECE7DA',
-              backgroundColor: 'rgba(236,231,218,0.12)',
-              pointBackgroundColor: '#ECE7DA',
-              pointBorderColor: '#2E6F73',
-              pointRadius: 3,
-              pointHoverRadius: 5,
-              borderWidth: 2.4,
-              tension: 0.35,
-              fill: false
-            },
-            {
-              label: 'Lower Limit (%)',
-              data: lowerValues,
-              borderColor: '#f0ad4e',
-              borderDash: [6,4],
-              borderWidth: 2,
-              pointRadius: 0,
-              tension: 0,
-              fill: false
-            },
-            {
-              label: 'Upper Limit (%)',
-              data: upperValues,
-              borderColor: '#e9ef52',
-              borderDash: [6,4],
-              borderWidth: 2,
-              pointRadius: 0,
-              tension: 0,
-              fill: false
-            }
-          ]
+  const labels = realtimeSoilLabels.length ? realtimeSoilLabels : ['--'];
+  const soilValues = realtimeSoilValues.length ? realtimeSoilValues : [liveSoilMoisture];
+  const lowerValues = labels.map(() => 30);
+  const upperValues = labels.map(() => 50);
+
+  if (soilChart) soilChart.destroy();
+
+  soilChart = new Chart($('soilChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Soil Moisture (%)',
+          data: soilValues,
+          borderColor: '#ECE7DA',
+          backgroundColor: 'rgba(236,231,218,0.12)',
+          pointBackgroundColor: '#ECE7DA',
+          pointBorderColor: '#2E6F73',
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          borderWidth: 2.4,
+          tension: 0.35,
+          fill: false
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          devicePixelRatio: 3,
-          animation: {
-            duration: 900,
-            easing: 'easeOutQuart'
-          },
-          interaction: {
-            mode: 'index',
-            intersect: false
-          },
-          plugins: {
-            legend: {
-              position: 'top',
-              labels: { color: '#ECE7DA', boxWidth: 10, boxHeight: 10, font: { size: 10, weight: '600' } }
-            },
-            tooltip: {
-              backgroundColor: 'rgba(10,28,34,0.96)',
-              titleColor: '#ECE7DA',
-              bodyColor: '#ECE7DA',
-              borderColor: '#A8B9A6',
-              borderWidth: 1,
-              padding: 10,
-              cornerRadius: 10,
-              displayColors: true
-            }
-          },
-          scales: {
-            x: { ticks: { color: '#A8B9A6', maxRotation: 50, minRotation: 50, font: { size: 9 } }, grid: { color: 'rgba(168,185,166,0.08)' } },
-            y: { beginAtZero: true, suggestedMax: 60, ticks: { color: '#A8B9A6', font: { size: 10 } }, grid: { color: 'rgba(168,185,166,0.10)' } }
-          }
+        {
+          label: 'Lower Limit (%)',
+          data: lowerValues,
+          borderColor: '#f0ad4e',
+          borderDash: [6, 4],
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0,
+          fill: false
+        },
+        {
+          label: 'Upper Limit (%)',
+          data: upperValues,
+          borderColor: '#e9ef52',
+          borderDash: [6, 4],
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0,
+          fill: false
         }
-      });
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      devicePixelRatio: 3,
+      animation: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            color: '#ECE7DA',
+            boxWidth: 10,
+            boxHeight: 10,
+            font: { size: 10, weight: '600' }
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(10,28,34,0.96)',
+          titleColor: '#ECE7DA',
+          bodyColor: '#ECE7DA',
+          borderColor: '#A8B9A6',
+          borderWidth: 1,
+          padding: 10,
+          cornerRadius: 10,
+          displayColors: true
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: '#A8B9A6',
+            maxRotation: 45,
+            minRotation: 45,
+            font: { size: 9 }
+          },
+          grid: { color: 'rgba(168,185,166,0.08)' }
+        },
+        y: {
+          beginAtZero: true,
+          max: 100,
+          ticks: {
+            color: '#A8B9A6',
+            font: { size: 10 }
+          },
+          grid: { color: 'rgba(168,185,166,0.10)' }
+        }
+      }
     }
+  });
+}
 
     function drawComparisonChart() {
       const data = getChartData();
       const labels = data.map(r => r.label || new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
       const s = getSettings();
       const modeledValues = data.map(r => Math.max((r.eto * s.kc) - r.rainfall, 0) * s.fieldArea);
-      const observedValues = data.map((_, index) => {
-        const base = s.pumpFlowRate * s.runTime;
-        if (($('reportRange') ? $('reportRange').value : 'Whole Cropping Duration') === 'Weekly') {
-          return base * (0.85 + (index % 3) * 0.08);
-        }
-        return base;
-      });
+     const observedValues = data.map(r => getObservedIrrigation(r));
+
       if (comparisonChart) comparisonChart.destroy();
       comparisonChart = new Chart($('comparisonChart').getContext('2d'), {
         type: 'bar',
@@ -1251,9 +1504,7 @@ $('upperLine').style.bottom = `${upperLimit}%`;
         const etc = r.eto * s.kc;
         const modeledMm = Math.max(etc - r.rainfall, 0);
         const modeledL = modeledMm * s.fieldArea;
-        const observedL = ($('reportRange') ? $('reportRange').value : 'Whole Cropping Duration') === 'Weekly'
-          ? (s.pumpFlowRate * s.runTime) * (0.85 + (index % 3) * 0.08)
-          : s.pumpFlowRate * s.runTime;
+        const observedL = getObservedIrrigation(r);
         const diff = observedL - modeledL;
         let status = 'Balanced'; if (diff > 20) status = 'Over-irrigated'; if (diff < -20) status = 'Under-irrigated';
         const tr = document.createElement('tr');
@@ -1266,17 +1517,19 @@ $('upperLine').style.bottom = `${upperLimit}%`;
       const s = getSettings();
       const data = getChartData();
       const rows = [['Date','ETo_mm','ETc_mm','Rainfall_mm','SoilMoisture_percent','ModeledIrrigation_L','ObservedIrrigation_L','Difference_L','Status','FieldArea_m2']];
+     
       data.forEach((r, index) => {
         const etc = r.eto * s.kc;
         const modeledMm = Math.max(etc - r.rainfall, 0);
         const modeledL = modeledMm * s.fieldArea;
-        const observedL = ($('reportRange') ? $('reportRange').value : 'Whole Cropping Duration') === 'Weekly'
-          ? (s.pumpFlowRate * s.runTime) * (0.85 + (index % 3) * 0.08)
-          : s.pumpFlowRate * s.runTime;
+        const observedL = getObservedIrrigation(r);
         const diff = observedL - modeledL;
+        
         let status = 'Balanced'; if (diff > 20) status = 'Over-irrigated'; if (diff < -20) status = 'Under-irrigated';
+        
         rows.push([r.label || r.date, r.eto.toFixed(2), etc.toFixed(2), r.rainfall.toFixed(2), liveSoilMoisture.toFixed(0), modeledL.toFixed(0), observedL.toFixed(0), diff.toFixed(0), status, s.fieldArea.toFixed(0)]);
       });
+      
       const csv = rows.map(r => r.join(',')).join('\n');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
@@ -1298,6 +1551,10 @@ $('upperLine').style.bottom = `${upperLimit}%`;
         setTimeout(() => { if (page === 'analytics') { drawSoilChart(); drawComparisonChart(); } }, 50);
       });
     });
+
+    $('controlMode').addEventListener('change', () => {
+  updateControlVisibility();
+});
 
     $('growthStage').addEventListener('change', () => {
   updateKcAutomatically();
@@ -1339,6 +1596,7 @@ if (downloadBtn) {
     link.click();
   });
 }
+
     setInterval(() => {
       updateClock();
       if (sampleData.length) {
@@ -1350,11 +1608,19 @@ if (downloadBtn) {
         }
       }
     }, 1000);
+
+setInterval(loadFirebaseCurrent, 3000);
+
     setInterval(() => { if (sampleData.length) renderHome(); }, 60000);
     window.addEventListener('resize', () => { if ($('page-analytics').classList.contains('active')) { drawSoilChart(); drawComparisonChart(); } });
 
-    loadCSVData();
     updateKcAutomatically();
+    updateControlVisibility();
+    loadCSVData();
+    loadRainForecast();
+    loadFirebaseCurrent();
+
+
   </script>
 </body>
 </html>
